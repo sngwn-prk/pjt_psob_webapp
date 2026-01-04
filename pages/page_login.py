@@ -82,15 +82,15 @@ def read_sheet(sheetname:str):
         df = conn.read(worksheet=sheetname, ttl=0)
         if 'phn_no' in df.columns:
             df['phn_no'] = df['phn_no'].apply(format_phone_number)
-        keys = [
-            "user_id", "birth_date", "student_no", "zip_code", "due_date", 
-            "request_date", "yearmonth", "poll_id", "thread_id", "poll_date", 
-            "deposit_date", "amount", "date_partition", "mbr_cnt", "active_mbr_cnt"
-            "warm_mbr_cnt", "attendant_mbr_cnt", "not_voted_mbr_cnt"
-        ]
-        for key in keys:
-            if key in df.columns:
-                df[key] = df[key].apply(lambda x: str(int(float(x))) if pd.notnull(x) else None)
+        # keys = [
+        #     "user_id", "birth_date", "student_no", "zip_code", "due_date", 
+        #     "request_date", "yearmonth", "poll_id", "thread_id", "poll_date", 
+        #     "deposit_date", "amount", "date_partition", "mbr_cnt", "active_mbr_cnt"
+        #     "warm_mbr_cnt", "attendant_mbr_cnt", "not_voted_mbr_cnt"
+        # ]
+        # for key in keys:
+        #     if key in df.columns:
+        #         df[key] = df[key].apply(lambda x: str(int(float(x))) if pd.notnull(x) else None)
         keys = ["lat", "lng"]
         for key in keys:
             if key in df.columns:
