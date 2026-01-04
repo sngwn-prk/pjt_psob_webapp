@@ -66,8 +66,8 @@ def read_sheet(sheetname:str):
     지정된 시트의 데이터를 읽어옵니다.
     """
     try:
-        conn = st.connection(sheet_name, type=GSheetsConnection, ttl=0)
-        df = conn.read(worksheet=sheet_name, ttl=0)
+        conn = st.connection(sheetname, type=GSheetsConnection, ttl=0)
+        df = conn.read(worksheet=sheetname, ttl=0)
         return df
     except Exception as e:
         return None
