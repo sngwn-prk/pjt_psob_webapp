@@ -110,7 +110,6 @@ def send_dm(user_id:str, server_nick:str, msg:str):
     특정 유저에게 DM을 전송하는 함수입니다.
     """
     try:
-        st.write(f"{user_id} / {server_nick}")
         # DM 채널 개설
         dm_url  = "https://discord.com/api/v10/users/@me/channels"
         dm_data = {"recipient_id": user_id}
@@ -136,7 +135,7 @@ def send_dm(user_id:str, server_nick:str, msg:str):
     except Exception as e:
         st.session_state.verification_message = {
             "type": "error",
-            "text": f"⚠️ DM 발송 중 오류 발생. 관리자에게 문의하세요. (오류 내용: {e})"
+            "text": f"⚠️ DM 발송 중 오류 발생. 관리자에게 문의하세요. (오류 내용: {e}, user_id:{user_id}, server_nick: {server_nick})"
         }
         return False
 
