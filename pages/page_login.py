@@ -13,6 +13,7 @@ from collections import defaultdict
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
 load_dotenv()
+from tenacity import retry, stop_after_attempt, wait_exponential
 
 # Google Spreadsheet API
 from oauth2client.service_account import ServiceAccountCredentials
@@ -29,6 +30,7 @@ HEADERS = {
 
 YEAR = datetime.now().strftime("%Y")
 
+@retry(stop=stop_after_attempt(5), wait=wait_exponential(multiplier=0.01, min=0.05, max=0.1))
 def get_sheet_instance():
     scope = ['https://spreadsheets.google.com/feeds',
     'https://www.googleapis.com/auth/drive']
@@ -43,6 +45,7 @@ def get_sheet_instance():
     doc = gc.open_by_url(SPREADSHEET_URL)
     return doc
 
+@retry(stop=stop_after_attempt(5), wait=wait_exponential(multiplier=0.01, min=0.05, max=0.1))
 def read_sheet(sheetname:str):
     """
     지정된 시트의 데이터를 읽어옵니다.
@@ -62,6 +65,7 @@ def generate_verification_code():
     """6자리 인증번호 생성"""
     return ''.join(random.choices(string.digits, k=6))
 
+@retry(stop=stop_after_attempt(5), wait=wait_exponential(multiplier=0.01, min=0.05, max=0.1))
 def send_dm(user_id:str, server_nick:str, msg:str):
     """
     특정 유저에게 DM을 전송하는 함수입니다.
