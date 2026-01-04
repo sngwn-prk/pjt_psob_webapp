@@ -26,7 +26,7 @@ WEBAPP_NAME = "PowerSupplyOB"
 # DISCORD_BOT_TOKEN = os.getenv("DISCORD_BOT_TOKEN")
 # DISCORD_BOT_ID = os.getenv("DISCORD_BOT_ID")
 SPREADSHEET_URL = st.secrets["SPREADSHEET_URL"]
-SERVICE_ACCOUNT_info = {key:st.secrets[key] for key in keys}
+SERVICE_ACCOUNT_INFO = {key:st.secrets[key] for key in keys}
 
 DISCORD_BOT_TOKEN = st.secrets["DISCORD_BOT_TOKEN"]
 DISCORD_BOT_ID = st.secrets["DISCORD_BOT_ID"]
@@ -36,24 +36,9 @@ HEADERS = {
 }
 YEAR = datetime.now().strftime("%Y")
 
-def get_sheet_instance():
-    scope = ['https://spreadsheets.google.com/feeds',
-    'https://www.googleapis.com/auth/drive']
-    keys = [
-        "type", "project_id", "private_key_id", "private_key", "client_email",
-        "client_id", "auth_uri", "token_uri", "auth_provider_x509_cert_url", "client_x509_cert_url", 
-        "universe_domain"
-    ]
-    # json_key = {key:os.getenv(key) for key in keys}
-    json_key = 
-    credential = ServiceAccountCredentials.from_json_keyfile_dict(json_key, scope)
-    gc = gspread.authorize(credential)
-    doc = gc.open_by_url(SPREADSHEET_URL)
-    return doc
-
 @retry(stop=stop_after_attempt(5), wait=wait_exponential(multiplier=0.01, min=0.05, max=0.1))
 def get_sheet_instance(sheet_name):
-    service_account_info = 
+    service_account_info = SERVICE_ACCOUNT_INFO
     scope = [
         "https://spreadsheets.google.com/feeds",
         "https://www.googleapis.com/auth/drive",
