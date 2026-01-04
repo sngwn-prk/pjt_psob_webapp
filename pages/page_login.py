@@ -112,7 +112,7 @@ def send_dm(user_id:str, server_nick:str, msg:str):
     try:
         # DM 채널 개설
         dm_url  = "https://discord.com/api/v10/users/@me/channels"
-        dm_data = {"recipient_id": user_id}
+        dm_data = {"recipient_id": int(user_id)}
         HEADERS = {
             "Authorization": f"Bot {DISCORD_BOT_TOKEN}",
             "Content-Type": "application/json"
