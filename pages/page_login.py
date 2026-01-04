@@ -27,10 +27,6 @@ WEBAPP_NAME = "PowerSupplyOB"
 # DISCORD_BOT_ID = os.getenv("DISCORD_BOT_ID")
 DISCORD_BOT_TOKEN = st.secrets["DISCORD_BOT_TOKEN"]
 DISCORD_BOT_ID = st.secrets["DISCORD_BOT_ID"]
-HEADERS = {
-    "Authorization": f"Bot {DISCORD_BOT_TOKEN}",
-    "Content-Type": "application/json"
-}
 YEAR = datetime.now().strftime("%Y")
 
 def format_phone_number(phone):
@@ -103,10 +99,14 @@ def send_dm(user_id:str, server_nick:str, msg:str):
     특정 유저에게 DM을 전송하는 함수입니다.
     """
     try:
+        st.write(f"{user_id} / {server_nick}")
         # DM 채널 개설
         dm_url  = "https://discord.com/api/v10/users/@me/channels"
         dm_data = {"recipient_id": user_id}
-
+        HEADERS = {
+            "Authorization": f"Bot {DISCORD_BOT_TOKEN}",
+            "Content-Type": "application/json"
+        }
         dm_res  = requests.post(dm_url, headers=HEADERS, json=dm_data)
         dm_res.raise_for_status()
         channel_id = dm_res.json()["id"]
@@ -116,7 +116,6 @@ def send_dm(user_id:str, server_nick:str, msg:str):
         msg_data = {"content": msg}
         response  = requests.post(msg_url, headers=HEADERS, json=msg_data)
         response.raise_for_status()
-
         if response.status_code in [200, 201]:
             return True
         else:
