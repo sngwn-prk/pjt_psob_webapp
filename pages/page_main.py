@@ -74,7 +74,8 @@ def get_sheet_instance(sheet_name):
     gc = gspread.authorize(credentials)
     spreadsheet_url = connection_info["spreadsheet"]
     spreadsheet = gc.open_by_url(spreadsheet_url)
-    return spreadsheet
+    worksheet = spreadsheet.worksheet(sheet_name)
+    return worksheet
 
 @retry(stop=stop_after_attempt(5), wait=wait_exponential(multiplier=0.01, min=0.05, max=0.1))
 def read_sheet(sheetname:str):
@@ -103,7 +104,7 @@ def read_sheet(sheetname:str):
         keys = ["lat", "lng"]
         for key in keys:
             if key in df.columns:
-                df[key] = df[key].apply(lambda x: float(x) if pd.notnull(x) else None)  
+                df[key] = df[key].apply(lambda x: float(x) if pd.notnull(x) else None)        
         return df
     except Exception as e:
         print(e)
