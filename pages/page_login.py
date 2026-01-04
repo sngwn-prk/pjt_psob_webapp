@@ -140,7 +140,7 @@ def send_dm(user_id:str, server_nick:str, msg:str):
     except Exception as e:
         st.session_state.verification_message = {
             "type": "error",
-            "text": f"⚠️ DM 발송 중 오류 발생. 관리자에게 문의하세요. {user_id}"
+            "text": f"⚠️ DM 발송 중 오류 발생. 관리자에게 문의하세요."
         }
         return False
 
