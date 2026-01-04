@@ -59,7 +59,8 @@ def get_sheet_instance(sheet_name):
     gc = gspread.authorize(credentials)
     spreadsheet_url = connection_info["spreadsheet"]
     spreadsheet = gc.open_by_url(spreadsheet_url)
-    return spreadsheet
+    worksheet = spreadsheet.worksheet(sheet_name)
+    return worksheet
 
 @retry(stop=stop_after_attempt(5), wait=wait_exponential(multiplier=0.01, min=0.05, max=0.1))
 def read_sheet(sheetname:str):
@@ -140,6 +141,9 @@ def page_login():
     # 회원 정보
     df = read_sheet("tbl_mbr_inf_snp")
     df = df[["user_id", "server_nick", "phn_no", "admin_yn"]]
+
+    test_df = df[["server_nick"]]
+    st.dataframe(test_df)
     
     # 현재 단계 확인
     current_step = st.session_state.get("step", "phone_input")
