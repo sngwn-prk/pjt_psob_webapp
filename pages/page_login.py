@@ -20,9 +20,13 @@ from oauth2client.service_account import ServiceAccountCredentials
 import gspread
 
 WEBAPP_NAME = "PowerSupplyOB"
-SPREADSHEET_URL = os.getenv("SPREADSHEET_URL")
-DISCORD_BOT_TOKEN = os.getenv("DISCORD_BOT_TOKEN")
-DISCORD_BOT_ID = os.getenv("DISCORD_BOT_ID")
+# SPREADSHEET_URL = os.getenv("SPREADSHEET_URL")
+# DISCORD_BOT_TOKEN = os.getenv("DISCORD_BOT_TOKEN")
+# DISCORD_BOT_ID = os.getenv("DISCORD_BOT_ID")
+SPREADSHEET_URL = st.secrets["SPREADSHEET_URL"]
+DISCORD_BOT_TOKEN = st.secrets["DISCORD_BOT_TOKEN"]
+DISCORD_BOT_ID = st.secrets["DISCORD_BOT_ID"]
+
 HEADERS = {
     "Authorization": f"Bot {DISCORD_BOT_TOKEN}",
     "Content-Type": "application/json"
@@ -39,7 +43,8 @@ def get_sheet_instance():
         "client_id", "auth_uri", "token_uri", "auth_provider_x509_cert_url", "client_x509_cert_url", 
         "universe_domain"
     ]
-    json_key = {key:os.getenv(key) for key in keys}
+    # json_key = {key:os.getenv(key) for key in keys}
+    json_key = {key:st.secrets[key] for key in keys}
     credential = ServiceAccountCredentials.from_json_keyfile_dict(json_key, scope)
     gc = gspread.authorize(credential)
     doc = gc.open_by_url(SPREADSHEET_URL)
