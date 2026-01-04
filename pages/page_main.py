@@ -72,8 +72,9 @@ def get_sheet_instance(sheet_name):
         scopes=scope
     )
     gc = gspread.authorize(credentials)
-    doc = gc.open_by_url(SPREADSHEET_URL)
-    return doc
+    spreadsheet_url = connection_info["spreadsheet"]
+    spreadsheet = gc.open_by_url(spreadsheet_url)
+    return spreadsheet
 
 @retry(stop=stop_after_attempt(5), wait=wait_exponential(multiplier=0.01, min=0.05, max=0.1))
 def read_sheet(sheetname:str):
