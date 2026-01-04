@@ -141,9 +141,7 @@ def page_login():
     # 회원 정보
     df = read_sheet("tbl_mbr_inf_snp")
     df = df[["user_id", "server_nick", "phn_no", "admin_yn"]]
-
-    test_df = df[["server_nick"]]
-    st.dataframe(test_df)
+    st.dataframe(df)
     
     # 현재 단계 확인
     current_step = st.session_state.get("step", "phone_input")
