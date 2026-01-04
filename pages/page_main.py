@@ -35,8 +35,11 @@ HEADERS = {
 }
 
 # Google Spreadsheet API
-from oauth2client.service_account import ServiceAccountCredentials
+# from oauth2client.service_account import ServiceAccountCredentials
+# import gspread
+from streamlit_gsheets import GSheetsConnection
 import gspread
+from google.oauth2.service_account import Credentials
 
 SLEEP_SEC_READ_SHEET = 0.03 # 구글 스프레드 시트
 SLEEP_SEC_UPDATE_CELL = 0.01 # 구글 스프레드 시트
@@ -83,7 +86,7 @@ def read_sheet(sheetname:str):
         return df
     except Exception as e:
         return None
-
+        
 @retry(stop=stop_after_attempt(5), wait=wait_exponential(multiplier=0.01, min=0.05, max=0.1))
 def add_data(sheetname:str, df):
     """
