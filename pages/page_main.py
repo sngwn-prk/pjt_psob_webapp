@@ -41,12 +41,26 @@ from streamlit_gsheets import GSheetsConnection
 import gspread
 from google.oauth2.service_account import Credentials
 
-SLEEP_SEC_READ_SHEET = 0.1 # 구글 스프레드 시트
+SLEEP_SEC_READ_SHEET = 0.03 # 구글 스프레드 시트
 SLEEP_SEC_UPDATE_CELL = 0.01 # 구글 스프레드 시트
 SLEEP_SEC_ADD_DATA = 0.01 # 구글 스프레드 시트
 # SPREADSHEET_URL = st.secrets["SPREADSHEET_URL"]
 
 YEAR = datetime.now().strftime("%Y")
+
+def format_phone_number(phone):
+    try:
+        if isinstance(phone, float):
+            phone = int(phone)
+        
+        phone_str = str(phone).replace('.0', '')
+        
+        if len(phone_str) == 10 and phone_str.isdigit():
+            return f"0{phone_str}"
+        else:
+            return phone_str
+    except:
+        return str(phone)
 
 @retry(stop=stop_after_attempt(5), wait=wait_exponential(multiplier=0.01, min=0.05, max=0.1))
 def get_sheet_instance(sheet_name):
