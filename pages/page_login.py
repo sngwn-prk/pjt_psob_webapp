@@ -11,8 +11,8 @@ import string
 import pandas as pd
 from collections import defaultdict
 from datetime import datetime, timedelta
-from dotenv import load_dotenv
-load_dotenv()
+# from dotenv import load_dotenv
+# load_dotenv()
 from tenacity import retry, stop_after_attempt, wait_exponential
 
 # Google Spreadsheet API
@@ -58,12 +58,8 @@ def read_sheet(sheetname:str):
     지정된 시트의 데이터를 읽어옵니다.
     """
     try:
-        doc = get_sheet_instance()
-        sheet = doc.worksheet(sheetname)
-        df = pd.DataFrame(sheet.get_all_values())
-        df.rename(columns=df.iloc[0], inplace = True)
-        df.drop(df.index[0], inplace=True)
-        df.reset_index(drop=True, inplace=True)
+        conn = st.connection(sheet_name, type=GSheetsConnection, ttl=0)
+        df = conn.read(worksheet=sheet_name, ttl=0)
         return df
     except Exception as e:
         return None
