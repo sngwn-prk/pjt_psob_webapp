@@ -84,21 +84,26 @@ def read_sheet(sheetname:str):
     try:
         conn = st.connection(sheetname, type=GSheetsConnection, ttl=0)
         df = conn.read(worksheet=sheetname, ttl=0)
+        if "user_id" in df.columns:
+            df["user_id"] = df["user_id"].astype(str).apply(lambda x: x.replace("mbr", ""))
+        if "poll_id" in df.columns:
+            df["poll_id"] = df["poll_id"].astype(str).apply(lambda x: x.replace("poll", ""))
+        if "thread_id" in df.columns:
+            df["thread_id"] = df["thread_id"].astype(str).apply(lambda x: x.replace("thread", ""))
         if 'phn_no' in df.columns:
             df['phn_no'] = df['phn_no'].apply(format_phone_number)
         keys = [
-            "user_id", "birth_date", "student_no", "zip_code", "due_date", 
-            "request_date", "yearmonth", "poll_id", "thread_id", "poll_date", 
-            "deposit_date", "amount", "date_partition", "mbr_cnt", "active_mbr_cnt"
-            "warm_mbr_cnt", "attendant_mbr_cnt", "not_voted_mbr_cnt"
+            "birth_date", "student_no", "zip_code", "due_date", "request_date", 
+            "yearmonth", "poll_date", "deposit_date", "amount", "date_partition", 
+            "mbr_cnt", "active_mbr_cnt", "warm_mbr_cnt", "attendant_mbr_cnt", "not_voted_mbr_cnt"
         ]
         for key in keys:
             if key in df.columns:
-                df[key] = df[key].apply(lambda x: str(int(float(x))) if pd.notnull(x) else None)
+                df[key] = df[key].apply(lambda x: str(int(x)) if pd.notnull(x) else None)
         keys = ["lat", "lng"]
         for key in keys:
             if key in df.columns:
-                df[key] = df[key].apply(lambda x: float(x) if pd.notnull(x) else None)    
+                df[key] = df[key].apply(lambda x: float(x) if pd.notnull(x) else None)  
         return df
     except Exception as e:
         print(e)
@@ -110,6 +115,13 @@ def add_data(sheetname:str, df):
     지정된 시트에 데이터를 추가합니다.
     """
     try:
+        if "user_id" in df.columns:
+            df['user_id'] = "mbr" + df['user_id'].astype(str)
+        if "poll_id" in df.columns:
+            df['poll_id'] = "poll" + df['poll_id'].astype(str)
+        if "thread_id" in df.columns:
+            df['thread_id'] = "thread" + df['thread_id'].astype(str)
+            
         doc = get_sheet_instance()
         sheet = doc.worksheet(sheetname)
         values = df.values.tolist()
