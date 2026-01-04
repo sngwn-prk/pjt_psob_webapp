@@ -41,7 +41,7 @@ from streamlit_gsheets import GSheetsConnection
 import gspread
 from google.oauth2.service_account import Credentials
 
-SLEEP_SEC_READ_SHEET = 0.03 # 구글 스프레드 시트
+SLEEP_SEC_READ_SHEET = 0.1 # 구글 스프레드 시트
 SLEEP_SEC_UPDATE_CELL = 0.01 # 구글 스프레드 시트
 SLEEP_SEC_ADD_DATA = 0.01 # 구글 스프레드 시트
 # SPREADSHEET_URL = st.secrets["SPREADSHEET_URL"]
