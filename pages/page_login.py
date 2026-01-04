@@ -70,6 +70,7 @@ def read_sheet(sheetname:str):
         df = conn.read(worksheet=sheetname, ttl=0)
         return df
     except Exception as e:
+        print(e)
         return None
 
 def generate_verification_code():
