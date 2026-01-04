@@ -80,13 +80,18 @@ def read_sheet(sheetname:str):
     try:
         conn = st.connection(sheetname, type=GSheetsConnection, ttl=0)
         df = conn.read(worksheet=sheetname, ttl=0)
+        if "user_id" in df.columns:
+            df["user_id"] = df["user_id"].astype(str).apply(lambda x: x.replace("mbr", ""))
+        if "poll_id" in df.columns:
+            df["poll_id"] = df["poll_id"].astype(str).apply(lambda x: x.replace("poll", ""))
+        if "thread_id" in df.columns:
+            df["thread_id"] = df["thread_id"].astype(str).apply(lambda x: x.replace("thread", ""))
         if 'phn_no' in df.columns:
             df['phn_no'] = df['phn_no'].apply(format_phone_number)
         keys = [
-            "user_id", "birth_date", "student_no", "zip_code", "due_date", 
-            "request_date", "yearmonth", "poll_id", "thread_id", "poll_date", 
-            "deposit_date", "amount", "date_partition", "mbr_cnt", "active_mbr_cnt"
-            "warm_mbr_cnt", "attendant_mbr_cnt", "not_voted_mbr_cnt"
+            "birth_date", "student_no", "zip_code", "due_date", "request_date", 
+            "yearmonth", "poll_date", "deposit_date", "amount", "date_partition", 
+            "mbr_cnt", "active_mbr_cnt", "warm_mbr_cnt", "attendant_mbr_cnt", "not_voted_mbr_cnt"
         ]
         for key in keys:
             if key in df.columns:
