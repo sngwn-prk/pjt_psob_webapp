@@ -28,12 +28,11 @@ load_dotenv()
 
 # Discord API
 SLEEP_SEC_SEND_DM = 0.01
-DISCORD_BOT_TOKEN = os.getenv("DISCORD_BOT_TOKEN")
+DISCORD_BOT_TOKEN = st.secrets["DISCORD_BOT_TOKEN"]
 HEADERS = {
     "Authorization": f"Bot {DISCORD_BOT_TOKEN}",
     "Content-Type": "application/json"
 }
-
 
 # Google Spreadsheet API
 from oauth2client.service_account import ServiceAccountCredentials
@@ -42,8 +41,16 @@ import gspread
 SLEEP_SEC_READ_SHEET = 0.03 # 구글 스프레드 시트
 SLEEP_SEC_UPDATE_CELL = 0.01 # 구글 스프레드 시트
 SLEEP_SEC_ADD_DATA = 0.01 # 구글 스프레드 시트
-SPREADSHEET_URL = os.getenv("SPREADSHEET_URL")
+SPREADSHEET_URL = st.secrets["SPREADSHEET_URL"]
 
+HEADERS = {
+    "Authorization": f"Bot {DISCORD_BOT_TOKEN}",
+    "Content-Type": "application/json"
+}
+
+YEAR = datetime.now().strftime("%Y")
+
+@retry(stop=stop_after_attempt(5), wait=wait_exponential(multiplier=0.01, min=0.05, max=0.1))
 def get_sheet_instance():
     scope = ['https://spreadsheets.google.com/feeds',
     'https://www.googleapis.com/auth/drive']
@@ -52,7 +59,8 @@ def get_sheet_instance():
         "client_id", "auth_uri", "token_uri", "auth_provider_x509_cert_url", "client_x509_cert_url", 
         "universe_domain"
     ]
-    json_key = {key:os.getenv(key) for key in keys}
+    # json_key = {key:os.getenv(key) for key in keys}
+    json_key = {key:st.secrets[key] for key in keys}
     credential = ServiceAccountCredentials.from_json_keyfile_dict(json_key, scope)
     gc = gspread.authorize(credential)
     doc = gc.open_by_url(SPREADSHEET_URL)
