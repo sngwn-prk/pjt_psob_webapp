@@ -33,6 +33,20 @@ HEADERS = {
 }
 YEAR = datetime.now().strftime("%Y")
 
+def format_phone_number(phone):
+    try:
+        if isinstance(phone, float):
+            phone = int(phone)
+        
+        phone_str = str(phone).replace('.0', '')
+        
+        if len(phone_str) == 10 and phone_str.isdigit():
+            return f"0{phone_str}"
+        else:
+            return phone_str
+    except:
+        return str(phone)
+
 @retry(stop=stop_after_attempt(5), wait=wait_exponential(multiplier=0.01, min=0.05, max=0.1))
 def get_sheet_instance(sheet_name):
     connection_info = st.secrets["connections"][sheet_name]
@@ -70,6 +84,8 @@ def read_sheet(sheetname:str):
     try:
         conn = st.connection(sheetname, type=GSheetsConnection, ttl=0)
         df = conn.read(worksheet=sheetname, ttl=0)
+        if 'phn_no' in df.columns:
+            df['phn_no'] = df['phn_no'].apply(format_phone_number)
         return df
     except Exception as e:
         print(e)
