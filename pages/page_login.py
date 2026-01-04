@@ -84,6 +84,8 @@ def read_sheet(sheetname:str):
             df['phn_no'] = df['phn_no'].apply(format_phone_number)
         if 'user_id' in df.columns:
             df['user_id'] = df['user_id'].astype(str)
+        if "user_id" in df.columns:
+            df["user_id"] = df["user_id"].apply(lambda x: str(int(float(x))) if pd.notnull(x) and x != "" else "")
         return df
     except Exception as e:
         print(e)
