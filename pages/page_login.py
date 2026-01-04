@@ -86,6 +86,8 @@ def read_sheet(sheetname:str):
         df = conn.read(worksheet=sheetname, ttl=0)
         if 'phn_no' in df.columns:
             df['phn_no'] = df['phn_no'].apply(format_phone_number)
+        if 'user_id' in df.columns:
+            df['user_id'] = df['user_id'].astype(str)
         return df
     except Exception as e:
         print(e)
