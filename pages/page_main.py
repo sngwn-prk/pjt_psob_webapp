@@ -93,12 +93,12 @@ def read_sheet(sheetname:str):
             "warm_mbr_cnt", "attendant_mbr_cnt", "not_voted_mbr_cnt"
         ]
         for key in keys:
-            df[key] = df[key].apply(lambda x: str(int(float(x))) if pd.notnull(x) else None)
-        keys = [
-            "lat", "lng"
-        ]
+            if key in df.columns:
+                df[key] = df[key].apply(lambda x: str(int(float(x))) if pd.notnull(x) else None)
+        keys = ["lat", "lng"]
         for key in keys:
-            df[key] = df[key].apply(lambda x: float(x) if pd.notnull(x) else None)        
+            if key in df.columns:
+                df[key] = df[key].apply(lambda x: float(x) if pd.notnull(x) else None)    
         return df
     except Exception as e:
         print(e)
