@@ -20,7 +20,7 @@ from streamlit_folium import st_folium
 WEBAPP_NAME = "PowerSupplyOB"
 YEAR = datetime.now().strftime("%Y")
 
-load_dotenv()
+# load_dotenv()
 
 # Streamlit Folium
 # import folium
@@ -43,44 +43,43 @@ SLEEP_SEC_UPDATE_CELL = 0.01 # 구글 스프레드 시트
 SLEEP_SEC_ADD_DATA = 0.01 # 구글 스프레드 시트
 # SPREADSHEET_URL = st.secrets["SPREADSHEET_URL"]
 
-HEADERS = {
-    "Authorization": f"Bot {DISCORD_BOT_TOKEN}",
-    "Content-Type": "application/json"
-}
-
 YEAR = datetime.now().strftime("%Y")
 
 @retry(stop=stop_after_attempt(5), wait=wait_exponential(multiplier=0.01, min=0.05, max=0.1))
-def get_sheet_instance():
-    scope = ['https://spreadsheets.google.com/feeds',
-    'https://www.googleapis.com/auth/drive']
-    keys = [
-        "type", "project_id", "private_key_id", "private_key", "client_email",
-        "client_id", "auth_uri", "token_uri", "auth_provider_x509_cert_url", "client_x509_cert_url", 
-        "universe_domain"
+def get_sheet_instance(sheet_name):
+    connection_info = st.secrets["connections"][sheet_name]
+    service_account_info = {
+        "type": connection_info["type"],
+        "project_id": connection_info["project_id"],
+        "private_key_id": connection_info["private_key_id"],
+        "private_key": connection_info["private_key"],
+        "client_email": connection_info["client_email"],
+        "client_id": connection_info["client_id"],
+        "auth_uri": connection_info["auth_uri"],
+        "token_uri": connection_info["token_uri"],
+        "auth_provider_x509_cert_url": connection_info["auth_provider_x509_cert_url"],
+        "client_x509_cert_url": connection_info["client_x509_cert_url"]
+    }
+    scope = [
+        "https://spreadsheets.google.com/feeds",
+        "https://www.googleapis.com/auth/drive",
     ]
-    # json_key = {key:os.getenv(key) for key in keys}
-    json_key = {key:st.secrets[key] for key in keys}
-    credential = ServiceAccountCredentials.from_json_keyfile_dict(json_key, scope)
-    gc = gspread.authorize(credential)
+    credentials = Credentials.from_service_account_info(
+        service_account_info, 
+        scopes=scope
+    )
+    gc = gspread.authorize(credentials)
     doc = gc.open_by_url(SPREADSHEET_URL)
     return doc
 
 @retry(stop=stop_after_attempt(5), wait=wait_exponential(multiplier=0.01, min=0.05, max=0.1))
-def read_sheet(sheetname:str, retry:int=5):
+def read_sheet(sheetname:str):
     """
     지정된 시트의 데이터를 읽어옵니다.
-    빠른 반복실행시 일시적으로 실패하면 재시도 함.
     """
     try:
-        with st.spinner(f"Load data: {sheetname}", show_time=True):
-            doc = get_sheet_instance()
-            sheet = doc.worksheet(sheetname)
-            df = pd.DataFrame(sheet.get_all_values())
-            df.rename(columns=df.iloc[0], inplace=True)
-            df.drop(df.index[0], inplace=True)
-            df.reset_index(drop=True, inplace=True)
-            time.sleep(SLEEP_SEC_READ_SHEET)
+        conn = st.connection(sheetname, type=GSheetsConnection, ttl=0)
+        df = conn.read(worksheet=sheetname, ttl=0)
         return df
     except Exception as e:
         return None
