@@ -19,6 +19,7 @@ from streamlit_folium import st_folium
 
 WEBAPP_NAME = "PowerSupplyOB"
 YEAR = datetime.now().strftime("%Y")
+SLEEP_SEC_CHANGE_DATA = 0.05 # 데이터 입력 딜레이
 
 # load_dotenv()
 
@@ -62,7 +63,7 @@ def format_phone_number(phone):
     except:
         return str(phone)
 
-# @retry(stop=stop_after_attempt(5), wait=wait_exponential(multiplier=0.01, min=0.05, max=0.1))
+@retry(stop=stop_after_attempt(5), wait=wait_exponential(multiplier=0.01, min=0.05, max=0.1))
 def get_sheet_instance(sheet_name):
     connection_info = st.secrets["connections"][sheet_name]
     service_account_info = {
@@ -123,7 +124,7 @@ def read_sheet(sheetname:str):
     except Exception as e:
         return None
         
-# @retry(stop=stop_after_attempt(5), wait=wait_exponential(multiplier=0.01, min=0.05, max=0.1))
+@retry(stop=stop_after_attempt(5), wait=wait_exponential(multiplier=0.01, min=0.05, max=0.1))
 def add_data(sheetname:str, df):
     """
     지정된 시트에 데이터를 추가합니다.
@@ -135,15 +136,12 @@ def add_data(sheetname:str, df):
             df['poll_id'] = "poll" + df['poll_id'].astype(str)
         if "thread_id" in df.columns:
             df['thread_id'] = "thread" + df['thread_id'].astype(str)
-        st.dataframe(df) #
         sheet = get_sheet_instance(sheetname)
         values = df.values.tolist()
-        st.write(values) #
         sheet.append_rows(values, value_input_option="RAW")
         time.sleep(SLEEP_SEC_ADD_DATA)
         return True
     except Exception as e:
-        st.write(e) #
         return False
 
 @retry(stop=stop_after_attempt(5), wait=wait_exponential(multiplier=0.01, min=0.05, max=0.1))
@@ -444,7 +442,8 @@ def menu_charge_req():
                 on_change=None  # 값이 바뀔 때 리런 방지
             )
             amount = 170000 if month_cnt == 12 else 15000 * month_cnt
-
+            with st.spinner(f"In progress...", show_time=True):
+                time.sleep(SLEEP_SEC_CHANGE_DATA)
             charge_req_btn1 = st.form_submit_button("요청", key="charge_req_btn1", use_container_width=True)
             if charge_req_btn1:
                 with st.spinner(f"In progress...", show_time=True):
@@ -519,7 +518,9 @@ def menu_charge_req():
                 help="불참 횟수를 입력해주세요."
             )
             total_amount = charge_input1*5000 + charge_input2*5000 + charge_input3*20000
-
+            
+            with st.spinner(f"In progress...", show_time=True):
+                time.sleep(SLEEP_SEC_CHANGE_DATA)
             charge_req_btn2 = st.form_submit_button("요청", key="charge_req_btn2", use_container_width=True)
             if charge_req_btn2:
                 with st.spinner(f"In progress...", show_time=True):
@@ -608,32 +609,36 @@ def menu_charge_req():
                 help="발생한 주차비를 입력하세요. (최대 5,000원)"
             )
             total_amount = fee_input1 + fee_input2 + fee_input3
-
+            with st.spinner(f"In progress...", show_time=True):
+                time.sleep(SLEEP_SEC_CHANGE_DATA)
             charge_req_btn3 = st.form_submit_button("요청", key="charge_req_btn3", use_container_width=True)
             if charge_req_btn3:
                 with st.spinner(f"In progress...", show_time=True):
-                    if total_amount>0 and fee_input3>5000:
-                        st.session_state["charge_req_msg3"] = ("warning", "주차의 경우 최대 5,000원까지 요청 가능합니다.")
-                    elif total_amount>0 and fee_input3<=5000:
-                        df = pd.DataFrame({
-                            "request_date": [request_date]*3,
-                            "user_id": [user_id]*3,
-                            "server_nick": [server_nick]*3,
-                            "charge_type":["구장", "음료", "주차"],
-                            "charge_detail": [f"{workout_date}(일) 구장", f"{workout_date}(일) 음료", f"{workout_date}(일) 주차"],  
-                            "deposit_date": [None]*3,
-                            "amount": [fee_input1, fee_input2, fee_input3],
-                            "user_check_yn": [user_check_yn]*3,
-                            "admin_check_yn": [admin_check_yn]*3,
-                            "valid_yn": ["y"]*3
-                        })
-                        df = df[df["amount"].notnull() & (df["amount"]!=0)].reset_index(drop=True)
-                        if len(df) > 0:
-                            add_data("tbl_charge_inf_his", df)
-                            st.session_state["charge_req_msg3"] = ("success", f"요청 완료되었습니다. 합계 금액: {total_amount:,}원")
-                            st.rerun()
-                        else:
-                            st.session_state["charge_req_msg3"] = ("warning", "요청할 데이터가 없습니다.")
+                    if workout_date is None:
+                        st.session_state["charge_req_msg3"] = ("warning", "운동 일정을 선택해주세요.")
+                    else:
+                        if total_amount>0 and fee_input3>5000:
+                            st.session_state["charge_req_msg3"] = ("warning", "주차의 경우 최대 5,000원까지 요청 가능합니다.")
+                        elif total_amount>0 and fee_input3<=5000:
+                            df = pd.DataFrame({
+                                "request_date": [request_date]*3,
+                                "user_id": [user_id]*3,
+                                "server_nick": [server_nick]*3,
+                                "charge_type":["구장", "음료", "주차"],
+                                "charge_detail": [f"{workout_date}(일) 구장", f"{workout_date}(일) 음료", f"{workout_date}(일) 주차"],  
+                                "deposit_date": [None]*3,
+                                "amount": [fee_input1, fee_input2, fee_input3],
+                                "user_check_yn": [user_check_yn]*3,
+                                "admin_check_yn": [admin_check_yn]*3,
+                                "valid_yn": ["y"]*3
+                            })
+                            df = df[df["amount"].notnull() & (df["amount"]!=0)].reset_index(drop=True)
+                            if len(df) > 0:
+                                add_data("tbl_charge_inf_his", df)
+                                st.session_state["charge_req_msg3"] = ("success", f"요청 완료되었습니다. 합계 금액: {total_amount:,}원")
+                                st.rerun()
+                            else:
+                                st.session_state["charge_req_msg3"] = ("warning", "요청할 데이터가 없습니다.")
                     else:
                         st.session_state["charge_req_msg3"] = ("warning", "요청할 데이터가 없습니다.")
             show_msg("charge_req_msg3")
@@ -716,7 +721,6 @@ def menu_dormant_request():
         cond4 = dormant_df["valid_yn"]=="y"
         user_df = dormant_df[cond1&cond2&cond3&cond4].reset_index(drop=True)
         user_df["select_yn"] = False
-        
         st.markdown("##### 휴면 철회")
         with st.form(key="request_dormant_form_cancel"):
             today_str = date.today().strftime("%Y%m%d")
@@ -734,6 +738,8 @@ def menu_dormant_request():
                 width="stretch",
                 key="dormant_cancellation_editor"
             )
+            with st.spinner(f"In progress...", show_time=True):
+                time.sleep(SLEEP_SEC_CHANGE_DATA)
             dormant_req_btn2 = st.form_submit_button("요청", key="dormant_req_btn2", use_container_width=True)
             if dormant_req_btn2:
                 cond1 = edit_df["select_yn"]==True
@@ -805,6 +811,8 @@ def menu_request_status():
             hide_index=True,
             width="stretch",
         )
+        with st.spinner(f"In progress...", show_time=True):
+            time.sleep(SLEEP_SEC_CHANGE_DATA)
         req_cancel_btn1 = st.form_submit_button("요청 취소", key="req_cancel_btn1", width="stretch")
         if req_cancel_btn1:
             with st.spinner(f"In progress...", show_time=True):
@@ -853,6 +861,8 @@ def menu_request_status():
             hide_index=True,
             width="stretch",
         )
+        with st.spinner(f"In progress...", show_time=True):
+            time.sleep(SLEEP_SEC_CHANGE_DATA)
         req_cancel_btn2 = st.form_submit_button("요청 취소", key="req_cancel_btn2", width="stretch")
         if req_cancel_btn2:
             with st.spinner(f"In progress...", show_time=True):
@@ -905,6 +915,8 @@ def menu_admin_approval():
             width="stretch",
             key="admin_approval_editor"
         )
+        with st.spinner(f"In progress...", show_time=True):
+            time.sleep(SLEEP_SEC_CHANGE_DATA)
         col1, col2 = st.columns([1, 1])
         with col1:
             approval_btn1 = st.form_submit_button("승인", key="approval_btn1", width="stretch")
@@ -1023,7 +1035,8 @@ def menu_admin_approval():
             width="stretch",
             key="admin_approval_dormant_editor"
         )
-
+        with st.spinner(f"In progress...", show_time=True):
+            time.sleep(SLEEP_SEC_CHANGE_DATA)
         col1, col2 = st.columns([1, 1])
         with col1:
             approval_btn2 = st.form_submit_button("승인", key="approval_btn2", use_container_width=True)
