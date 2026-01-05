@@ -476,14 +476,18 @@ def menu_charge_req():
         charge_df["idx"] = charge_df.index
 
         # 항목별 횟수 입력       
-        cond1 = charge_df["charge_type"] == "벌금"
-        cond2 = charge_df["charge_detail"].str.contains("미투표")
-        cond3 = charge_df["user_id"] == user_id
-        cond4 = charge_df["user_check_yn"] == "n"
-        cond5 = charge_df["valid_yn"] == "y"
-        notvote_charge_df = charge_df[cond1&cond2&cond3&cond4&cond5].reset_index(drop=True)
-        notvote_charge_df = notvote_charge_df.sort_values(by="request_date", ascending=True).reset_index(drop=True)
-        not_voted_cnt = len(notvote_charge_df)
+        if len(charge_df)>0:
+            cond1 = charge_df["charge_type"] == "벌금"
+            cond2 = charge_df["charge_detail"].str.contains("미투표")
+            cond3 = charge_df["user_id"] == user_id
+            cond4 = charge_df["user_check_yn"] == "n"
+            cond5 = charge_df["valid_yn"] == "y"
+            notvote_charge_df = charge_df[cond1&cond2&cond3&cond4&cond5].reset_index(drop=True)
+            notvote_charge_df = notvote_charge_df.sort_values(by="request_date", ascending=True).reset_index(drop=True)
+            not_voted_cnt = len(notvote_charge_df)
+        else:
+            notvote_charge_df = charge_df.copy()
+            not_voted_cnt = 0
 
         st.markdown("##### 벌금 정산")
         st.markdown("- 합계 금액 입금 후 요청해주세요.")
