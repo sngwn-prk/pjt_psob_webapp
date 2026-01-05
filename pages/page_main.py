@@ -460,10 +460,10 @@ def menu_charge_req():
                         }])
                         add_data("tbl_charge_inf_his", df)
                         st.session_state["charge_req_msg1"] = ("success", "요청 완료되었습니다.")
-                        # st.rerun()
+                        st.rerun()
                     else:
                         st.session_state["charge_req_msg1"] = ("warning", "납부기간을 입력해주세요.")
-            # show_msg("charge_req_msg1")
+            show_msg("charge_req_msg1")
 
     # 벌금 정산
     elif selected_menu_charge_req==menu_items_charge_req[1]:
@@ -745,10 +745,10 @@ def menu_dormant_request():
                         update_cell("tbl_mbr_dormant_his", f"E{idx+2}", "n")
                         # admin_check_yn 업데이트
                         update_cell("tbl_mbr_dormant_his", f"F{idx+2}", "n")
-                    st.session_state["dormant_request_msg"] = ("success", "요청 완료되었습니다.")
+                    st.session_state["dormant_req_msg2"] = ("success", "요청 완료되었습니다.")
                     st.rerun()
                 else:
-                    st.session_state["dormant_request_msg"] = ("warning", "요청할 데이터가 없습니다.")
+                    st.session_state["dormant_req_msg2"] = ("warning", "요청할 데이터가 없습니다.")
             show_msg("dormant_req_msg2")
 
     # 과거 휴면 내역
