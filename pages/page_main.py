@@ -136,7 +136,7 @@ def add_data(sheetname:str, df):
         if "thread_id" in df.columns:
             df['thread_id'] = "thread" + df['thread_id'].astype(str)
         st.dataframe(df)
-        doc = get_sheet_instance()
+        doc = get_sheet_instance(sheetname)
         sheet = doc.worksheet(sheetname)
         values = df.values.tolist()
         st.write(values)
