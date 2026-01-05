@@ -135,16 +135,15 @@ def add_data(sheetname:str, df):
             df['poll_id'] = "poll" + df['poll_id'].astype(str)
         if "thread_id" in df.columns:
             df['thread_id'] = "thread" + df['thread_id'].astype(str)
-        st.dataframe(df)
-        doc = get_sheet_instance(sheetname)
-        sheet = doc.worksheet(sheetname)
+        st.dataframe(df) #
+        sheet = get_sheet_instance(sheetname)
         values = df.values.tolist()
-        st.write(values)
+        st.write(values) #
         sheet.append_rows(values, value_input_option="RAW")
         time.sleep(SLEEP_SEC_ADD_DATA)
         return True
     except Exception as e:
-        st.write(e)
+        st.write(e) #
         return False
 
 @retry(stop=stop_after_attempt(5), wait=wait_exponential(multiplier=0.01, min=0.05, max=0.1))
@@ -154,8 +153,7 @@ def update_cell(sheetname, cell, value):
     input: "시트1", "A1", "Hello World"
     """
     try:
-        doc = get_sheet_instance()
-        sheet = doc.worksheet(sheetname)
+        sheet = get_sheet_instance(sheetname)
         if sheet:
             sheet.update_acell(cell, value)
             time.sleep(SLEEP_SEC_UPDATE_CELL)
