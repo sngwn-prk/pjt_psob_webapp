@@ -144,6 +144,7 @@ def add_data(sheetname:str, df):
         time.sleep(SLEEP_SEC_ADD_DATA)
         return True
     except Exception as e:
+        st.write(e)
         return False
 
 @retry(stop=stop_after_attempt(5), wait=wait_exponential(multiplier=0.01, min=0.05, max=0.1))
