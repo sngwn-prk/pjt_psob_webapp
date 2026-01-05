@@ -121,10 +121,9 @@ def read_sheet(sheetname:str):
                 df[key] = df[key].apply(lambda x: float(x) if pd.notnull(x) else None)        
         return df
     except Exception as e:
-        print(e)
         return None
         
-@retry(stop=stop_after_attempt(5), wait=wait_exponential(multiplier=0.01, min=0.05, max=0.1))
+# @retry(stop=stop_after_attempt(5), wait=wait_exponential(multiplier=0.01, min=0.05, max=0.1))
 def add_data(sheetname:str, df):
     """
     지정된 시트에 데이터를 추가합니다.
@@ -136,10 +135,11 @@ def add_data(sheetname:str, df):
             df['poll_id'] = "poll" + df['poll_id'].astype(str)
         if "thread_id" in df.columns:
             df['thread_id'] = "thread" + df['thread_id'].astype(str)
-            
+        st.dataframe(df)
         doc = get_sheet_instance()
         sheet = doc.worksheet(sheetname)
         values = df.values.tolist()
+        st.write(values)
         sheet.append_rows(values, value_input_option="RAW")
         time.sleep(SLEEP_SEC_ADD_DATA)
         return True
@@ -468,7 +468,7 @@ def menu_charge_req():
                         st.rerun()
                     else:
                         st.session_state["charge_req_msg1"] = ("warning", "납부기간을 입력해주세요.")
-            show_msg("charge_req_msg1")
+            # show_msg("charge_req_msg1")
 
     # 벌금 정산
     elif selected_menu_charge_req==menu_items_charge_req[1]:
