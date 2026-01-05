@@ -632,8 +632,8 @@ def menu_charge_req():
                                 st.rerun()
                             else:
                                 st.session_state["charge_req_msg3"] = ("warning", "요청할 데이터가 없습니다.")
-                    else:
-                        st.session_state["charge_req_msg3"] = ("warning", "요청할 데이터가 없습니다.")
+                        else:
+                            st.session_state["charge_req_msg3"] = ("warning", "요청할 데이터가 없습니다.")
             show_msg("charge_req_msg3")
 
 def menu_dormant_request():
