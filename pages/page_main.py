@@ -19,7 +19,7 @@ from streamlit_folium import st_folium
 
 WEBAPP_NAME = "PowerSupplyOB"
 YEAR = datetime.now().strftime("%Y")
-SLEEP_SEC_CHANGE_DATA = 0.05 # 데이터 입력 딜레이
+# SLEEP_SEC_CHANGE_DATA = 0.05 # 데이터 입력 딜레이
 
 # load_dotenv()
 
@@ -442,8 +442,6 @@ def menu_charge_req():
                 on_change=None  # 값이 바뀔 때 리런 방지
             )
             amount = 170000 if month_cnt == 12 else 15000 * month_cnt
-            with st.spinner(f"In progress...", show_time=True):
-                time.sleep(SLEEP_SEC_CHANGE_DATA)
             charge_req_btn1 = st.form_submit_button("요청", key="charge_req_btn1", use_container_width=True)
             if charge_req_btn1:
                 with st.spinner(f"In progress...", show_time=True):
@@ -518,9 +516,6 @@ def menu_charge_req():
                 help="불참 횟수를 입력해주세요."
             )
             total_amount = charge_input1*5000 + charge_input2*5000 + charge_input3*20000
-            
-            with st.spinner(f"In progress...", show_time=True):
-                time.sleep(SLEEP_SEC_CHANGE_DATA)
             charge_req_btn2 = st.form_submit_button("요청", key="charge_req_btn2", use_container_width=True)
             if charge_req_btn2:
                 with st.spinner(f"In progress...", show_time=True):
@@ -609,8 +604,6 @@ def menu_charge_req():
                 help="발생한 주차비를 입력하세요. (최대 5,000원)"
             )
             total_amount = fee_input1 + fee_input2 + fee_input3
-            with st.spinner(f"In progress...", show_time=True):
-                time.sleep(SLEEP_SEC_CHANGE_DATA)
             charge_req_btn3 = st.form_submit_button("요청", key="charge_req_btn3", use_container_width=True)
             if charge_req_btn3:
                 with st.spinner(f"In progress...", show_time=True):
@@ -738,8 +731,6 @@ def menu_dormant_request():
                 width="stretch",
                 key="dormant_cancellation_editor"
             )
-            with st.spinner(f"In progress...", show_time=True):
-                time.sleep(SLEEP_SEC_CHANGE_DATA)
             dormant_req_btn2 = st.form_submit_button("요청", key="dormant_req_btn2", use_container_width=True)
             if dormant_req_btn2:
                 cond1 = edit_df["select_yn"]==True
@@ -811,8 +802,6 @@ def menu_request_status():
             hide_index=True,
             width="stretch",
         )
-        with st.spinner(f"In progress...", show_time=True):
-            time.sleep(SLEEP_SEC_CHANGE_DATA)
         req_cancel_btn1 = st.form_submit_button("요청 취소", key="req_cancel_btn1", width="stretch")
         if req_cancel_btn1:
             with st.spinner(f"In progress...", show_time=True):
@@ -861,8 +850,6 @@ def menu_request_status():
             hide_index=True,
             width="stretch",
         )
-        with st.spinner(f"In progress...", show_time=True):
-            time.sleep(SLEEP_SEC_CHANGE_DATA)
         req_cancel_btn2 = st.form_submit_button("요청 취소", key="req_cancel_btn2", width="stretch")
         if req_cancel_btn2:
             with st.spinner(f"In progress...", show_time=True):
@@ -915,8 +902,6 @@ def menu_admin_approval():
             width="stretch",
             key="admin_approval_editor"
         )
-        with st.spinner(f"In progress...", show_time=True):
-            time.sleep(SLEEP_SEC_CHANGE_DATA)
         col1, col2 = st.columns([1, 1])
         with col1:
             approval_btn1 = st.form_submit_button("승인", key="approval_btn1", width="stretch")
@@ -1035,8 +1020,6 @@ def menu_admin_approval():
             width="stretch",
             key="admin_approval_dormant_editor"
         )
-        with st.spinner(f"In progress...", show_time=True):
-            time.sleep(SLEEP_SEC_CHANGE_DATA)
         col1, col2 = st.columns([1, 1])
         with col1:
             approval_btn2 = st.form_submit_button("승인", key="approval_btn2", use_container_width=True)
