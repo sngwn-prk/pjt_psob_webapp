@@ -233,6 +233,7 @@ def menu_dashboard():
 
         due_date_ym = mbr_user_df["due_date"].iloc[0].replace("'", "")
         st.markdown(f"- 회비 유효기한: {due_date_ym}")
+        
         cond1 = dormant_df["user_id"]==user_id
         cond2 = dormant_df["dormant_yn"]=="y"
         cond3 = dormant_df["dormant_admin_yn"]=="y"
@@ -282,7 +283,21 @@ def menu_dashboard():
                 "dormant_yn": status_lst
             })
         disp1_df.columns = ["기간", "상태"]
-        st.dataframe(disp1_df, hide_index=True, width="stretch")
+        st.dataframe(
+            disp1_df, 
+            column_config={
+                "기간": st.column_config.TextColumn(
+                    "기간",
+                    help="유효기한 및 현시점을 기준으로 정렬됩니다.",
+                ),
+                "상태": st.column_config.TextColumn(
+                    "상태",
+                    help="납부/미납/휴면 중 하나로 표현됩니다.",
+                ),
+            },
+            hide_index=True, 
+            width="stretch"
+        )
     elif selected_menu_dashboard==menu_items_dashboard[1]:
         # 데이터 로드
         idx_df = read_sheet("tbl_dashboard_index_his")
