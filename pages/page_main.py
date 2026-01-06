@@ -259,12 +259,12 @@ def menu_dashboard():
             status_lst = []
             for ym in ym_lst:
                 if ym in dormant_ym_lst:
-                    status.append("휴면")
+                    status_lst.append("휴면")
                     continue
                 if ym <= due_date_ym:
-                    status.append("납부")
+                    status_lst.append("납부")
                 else:
-                    status.append("미납")
+                    status_lst.append("미납")
                 
             disp1_df = pd.DataFrame({
                 "yearmonth": ym_lst,
