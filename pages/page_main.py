@@ -866,7 +866,7 @@ def menu_request_status():
                 "yearmonth": st.column_config.TextColumn("대상 기간", disabled=True),
                 "dormant_admin_yn": st.column_config.TextColumn("요청 유형", disabled=True),
             },
-            column_order=["cancel_yn", "yearmonth", "dormant_yn"],
+            column_order=["cancel_yn", "yearmonth", "dormant_admin_yn"],
             num_rows="fixed",
             hide_index=True,
             width="stretch",
