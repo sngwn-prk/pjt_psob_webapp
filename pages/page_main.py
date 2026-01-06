@@ -265,16 +265,24 @@ def menu_dashboard():
                     status_lst.append("납부")
                 else:
                     status_lst.append("미납")
-                
             disp1_df = pd.DataFrame({
                 "yearmonth": ym_lst,
                 "dormant_yn": status_lst
             })
         else:
             ym_lst = get_ym_lst(today_ym, due_date_ym)
+            status_lst = []
+            for ym in ym_lst:
+                if ym in dormant_ym_lst:
+                    status_lst.append("휴면")
+                    continue
+                if ym <= due_date_ym:
+                    status_lst.append("납부")
+                else:
+                    status_lst.append("미납")
             disp1_df = pd.DataFrame({
                 "yearmonth": ym_lst,
-                "dormant_yn": ["휴면" if ym in dormant_ym_lst else "활성" for ym in ym_lst],
+                "dormant_yn": status_lst
             })
         disp1_df.columns = ["기간", "상태"]
         st.dataframe(disp1_df, hide_index=True, width="stretch")
