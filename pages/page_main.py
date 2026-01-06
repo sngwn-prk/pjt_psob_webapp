@@ -1060,14 +1060,14 @@ def menu_admin_approval():
                                 # 요청기간이 현시점이면 active_yn:>y
                                 if row.yearmonth==today_ym:
                                     user_idx = mbr_df[mbr_df.user_id==user_id]["idx"].values[0]
-                                    update_cell("tbl_mbr_inf_snp", f"N{idx+2}", "y")
+                                    update_cell("tbl_mbr_inf_snp", f"N{user_idx+2}", "y")
                             # dormant_admin_yn: n>y
                             elif row.withdrawal_yn=="신청":
                                 update_cell("tbl_mbr_dormant_his", f"F{idx+2}", "y")
                                 # 요청기간이 현시점이면 active_yn:>n
                                 if row.yearmonth==today_ym:
                                     user_idx = mbr_df[mbr_df.user_id==user_id]["idx"].values[0]
-                                    update_cell("tbl_mbr_inf_snp", f"N{idx+2}", "n")
+                                    update_cell("tbl_mbr_inf_snp", f"N{user_idx+2}", "n")
 
                         tmp_df = selected_df[["user_id", "yearmonth", "withdrawal_yn"]].reset_index(drop=True)
                         tmp_df['month_cnt'] = tmp_df['withdrawal_yn'].map({'신청': 1, '철회': -1})
