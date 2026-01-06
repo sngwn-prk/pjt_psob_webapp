@@ -751,22 +751,23 @@ def menu_dormant_request():
             )
             dormant_req_btn2 = st.form_submit_button("요청", key="dormant_req_btn2", use_container_width=True)
             if dormant_req_btn2:
-                cond1 = edit_df["select_yn"]==True
-                cond2 = edit_df["admin_check_yn"]=="y"
-                selected_df = edit_df[cond1 & cond2].reset_index(drop=True)
-                if len(selected_df) >= 1:
-                    for _, row in selected_df.iterrows():
-                        idx = row["idx"]
-                        # request_date 업데이트
-                        update_cell("tbl_mbr_dormant_his", f"A{idx+2}", "'"+today_str)
-                        # dormant_yn 업데이트
-                        update_cell("tbl_mbr_dormant_his", f"E{idx+2}", "n")
-                        # admin_check_yn 업데이트
-                        update_cell("tbl_mbr_dormant_his", f"F{idx+2}", "n")
-                    st.session_state["dormant_req_msg2"] = ("success", "요청 완료되었습니다.")
-                    st.rerun()
-                else:
-                    st.session_state["dormant_req_msg2"] = ("warning", "요청할 데이터가 없습니다.")
+                with st.spinner(f"In progress...", show_time=True):
+                    cond1 = edit_df["select_yn"]==True
+                    cond2 = edit_df["admin_check_yn"]=="y"
+                    selected_df = edit_df[cond1 & cond2].reset_index(drop=True)
+                    if len(selected_df) >= 1:
+                        for _, row in selected_df.iterrows():
+                            idx = row["idx"]
+                            # request_date 업데이트
+                            update_cell("tbl_mbr_dormant_his", f"A{idx+2}", "'"+today_str)
+                            # dormant_yn 업데이트
+                            update_cell("tbl_mbr_dormant_his", f"E{idx+2}", "n")
+                            # admin_check_yn 업데이트
+                            update_cell("tbl_mbr_dormant_his", f"F{idx+2}", "n")
+                        st.session_state["dormant_req_msg2"] = ("success", "요청 완료되었습니다.")
+                        st.rerun()
+                    else:
+                        st.session_state["dormant_req_msg2"] = ("warning", "요청할 데이터가 없습니다.")
             show_msg("dormant_req_msg2")
 
     # 과거 휴면 내역
