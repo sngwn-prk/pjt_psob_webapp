@@ -1022,7 +1022,7 @@ def menu_admin_approval():
     approval_btn2, reject_btn2 = False, False
     with st.form(key="req_approval_form2"):
         cond1 = dormant_df["dormant_yn"]=="y"
-        cond2 = dormant_df["withdrawal_admin_yn"]=="n"
+        cond2 = dormant_df["dormant_admin_yn"]=="n" and dormant_df["withdrawal_admin_yn"]=="n"
         cond3 = dormant_df["valid_yn"]=="y"
         dormant_df = dormant_df[cond1&cond2&cond3].reset_index(drop=True)
 
