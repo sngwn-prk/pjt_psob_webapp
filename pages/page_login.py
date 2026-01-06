@@ -283,10 +283,10 @@ def page_login():
         with st.container():
             # 연락처 입력
             phn_no = st.text_input(
-                "숫자만 입력하세요. ('-' 제외)",
+                "연락처",
                 value=st.session_state.get("phone_number", ""),
                 placeholder="01012345678",
-                help="하이픈(-) 없이 숫자만 입력하세요. 관리자를 통해 사전에 등록된 사용자만 접근 가능합니다."
+                help="하이픈(-) 없이 숫자만 입력하세요. 관리자를 통해 사전에 등록된 사용자만 접근 가능합니다. (매주 월 12시 업데이트)"
             )
             
             # 인증번호 발송 버튼 아래에 메시지 표시 (항상 같은 자리)
