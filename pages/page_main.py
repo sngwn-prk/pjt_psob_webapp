@@ -255,7 +255,12 @@ def menu_dashboard():
             return ym_lst
 
         if today_ym >= due_date_ym:
-            ym_lst = get_ym_lst(due_date_ym, today_ym)
+            ym_lst = []
+            curr = datetime.strptime(due_date_ym, "%Y%m")
+            end = datetime.strptime(today_ym, "%Y%m")
+            while curr <= end:
+                # ym_lst.append(curr.strftime("%Y%m"))
+                curr += relativedelta(months=1)
             disp1_df = pd.DataFrame({
                 "yearmonth": ym_lst,
                 "dormant_yn": ["휴면" if ym in dormant_ym_lst else "미납" for ym in ym_lst],
