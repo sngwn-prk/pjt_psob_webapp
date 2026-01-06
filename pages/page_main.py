@@ -258,7 +258,7 @@ def menu_dashboard():
             ym_lst = []
             curr = datetime.strptime(due_date_ym, "%Y%m")
             end = datetime.strptime(today_ym, "%Y%m")
-            while curr <= end:
+            while curr < end:
                 # ym_lst.append(curr.strftime("%Y%m"))
                 curr += relativedelta(months=1)
             disp1_df = pd.DataFrame({
