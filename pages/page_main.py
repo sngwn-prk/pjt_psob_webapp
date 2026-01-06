@@ -115,7 +115,6 @@ def read_sheet(sheetname:str):
         for key in keys:
             if key in df.columns:
                 df[key] = df[key].apply(lambda x: str(int(x)) if pd.notnull(x) else None)
-                df[key] = df[key].astype(str)
         keys = ["lat", "lng"]
         for key in keys:
             if key in df.columns:
@@ -808,6 +807,7 @@ def menu_request_status():
         cond4 = charge_df["valid_yn"] == "y"
         df1 = charge_df[cond1&cond2&cond3&cond4].reset_index(drop=True)
         df1['select_yn'] = False
+        df1["deposit_date"] = df1["deposit_date"].astype(str) # 
         edit_df1 = st.data_editor(
             df1,
             column_config={
