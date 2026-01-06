@@ -254,16 +254,25 @@ def menu_dashboard():
                 curr += relativedelta(months=1)
             return ym_lst
 
-        if today_ym >= due_date_ym:
-            ym_lst = []
-            curr = datetime.strptime(due_date_ym, "%Y%m")
-            end = datetime.strptime(today_ym, "%Y%m")
-            while curr < end:
-                # ym_lst.append(curr.strftime("%Y%m"))
-                curr += relativedelta(months=1)
+        if today_ym >= due_date_ym: # 유효기한이 과거/현재인 경우: 유효기한 ~ 현재
+            ym_lst = get_ym_lst(due_date_ym, today_ym)
+            while que <= end:
+                ym_lst.append(que.strftime("%Y%m"))
+                que += relativedelta(months=1)
+            
+            status = []
+            for ym in ym_lst:
+                if ym in dormant_ym_lst:
+                    status.append("휴면")
+                    continue
+                if ym <= due_date_ym:
+                    status.append("납부")
+                else:
+                    status.append("미납")
+                
             disp1_df = pd.DataFrame({
                 "yearmonth": ym_lst,
-                "dormant_yn": ["휴면" if ym in dormant_ym_lst else "미납" for ym in ym_lst],
+                "dormant_yn": status
             })
         else:
             ym_lst = get_ym_lst(today_ym, due_date_ym)
