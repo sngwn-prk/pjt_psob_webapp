@@ -255,12 +255,8 @@ def menu_dashboard():
             return ym_lst
 
         if today_ym >= due_date_ym: # 유효기한이 과거/현재인 경우: 유효기한 ~ 현재
-            ym_lst = get_ym_lst(due_date_ym, today_ym)
-            while que <= end:
-                ym_lst.append(que.strftime("%Y%m"))
-                que += relativedelta(months=1)
-            
-            status = []
+            ym_lst = get_ym_lst(due_date_ym, today_ym)            
+            status_lst = []
             for ym in ym_lst:
                 if ym in dormant_ym_lst:
                     status.append("휴면")
@@ -272,7 +268,7 @@ def menu_dashboard():
                 
             disp1_df = pd.DataFrame({
                 "yearmonth": ym_lst,
-                "dormant_yn": status
+                "dormant_yn": status_lst
             })
         else:
             ym_lst = get_ym_lst(today_ym, due_date_ym)
