@@ -533,7 +533,7 @@ def menu_charge_req():
             charge_input1 = st.number_input(
                 "미투표(회)", value=not_voted_cnt, min_value=0, max_value=not_voted_cnt, step=1,
                 key="charge_input1",
-                help="미투표 횟수를 입력해주세요. 모니터링된 과거 미투표 내역보다 낮은 횟수를 입력할 때, 과거 데이터부터 정산 요청됩니다."
+                help="미투표 횟수를 입력해주세요. 설정된 기본 값은 모니터링된 과거 미투표 내역의 횟수입니다. 기존 내역보다 낮은 횟수를 입력할 때, 과거 데이터부터 정산 요청됩니다."
             )
             charge_input2 = st.number_input(
                 "지각(회)", value=0, min_value=0, step=1, 
@@ -784,7 +784,7 @@ def menu_dormant_request():
 
     # 과거 휴면 내역
     st.markdown("##### [참고] 현재 휴면 내역")
-    st.markdown("- 요청 중 또는 운영진이 승인한 휴면 내역입니다.")
+    st.markdown("- 요청 중 또는 운영진이 승인한 휴면 신청/철회 내역입니다.")
     cond1 = dormant_df["user_id"]==user_id
     cond2 = dormant_df["dormant_yn"]=="y"
     cond3 = dormant_df["withdrawal_yn"]=="n"
@@ -876,7 +876,7 @@ def menu_request_status():
         edit_df2 = st.data_editor(
             df2,
             column_config={
-                "cancel_yn": st.column_config.CheckboxColumn("취소", disabled=False, default=False),
+                "cancel_yn": st.column_config.CheckboxColumn("선택", disabled=False, default=False),
                 "yearmonth": st.column_config.TextColumn("대상 기간", disabled=True),
                 "dormant_admin_yn": st.column_config.TextColumn("요청 유형", disabled=True),
             },
