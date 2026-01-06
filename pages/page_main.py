@@ -897,6 +897,7 @@ def menu_admin_approval():
     dormant_df["idx"] = dormant_df.index
     mbr_df = read_sheet("tbl_mbr_inf_snp")
     mbr_df["idx"] = mbr_df.index
+    user_id = st.session_state.get("user_id", "")
 
     st.markdown("---")
     st.markdown("##### 1. 정산 요청 현황")
@@ -1048,6 +1049,7 @@ def menu_admin_approval():
             approval_btn2 = st.form_submit_button("승인", key="approval_btn2", use_container_width=True)
             if approval_btn2:
                 with st.spinner(f"In progress...", show_time=True):
+                    today_ym = datetime.now().strftime("%Y%m")
                     edit_df["select_yn"] = edit_df["select_yn"].apply(lambda x: "y" if x else "n")
                     selected_df = edit_df[edit_df["select_yn"]=="y"].reset_index(drop=True)
                     if len(selected_df) >= 1:
@@ -1056,9 +1058,17 @@ def menu_admin_approval():
                             # withdrawal_admin_yn: n>y
                             if row.withdrawal_yn=="철회":
                                 update_cell("tbl_mbr_dormant_his", f"H{idx+2}", "y")
+                                # 요청기간이 현시점이면 active_yn:>y
+                                if row.yearmonth==today_ym:
+                                    user_idx = mbr_df[mbr_df.user_id==user_id]["idx"].values[0]
+                                    update_cell("tbl_mbr_inf_snp", f"N{idx+2}", "y")
                             # dormant_admin_yn: n>y
                             elif row.withdrawal_yn=="신청":
                                 update_cell("tbl_mbr_dormant_his", f"F{idx+2}", "y")
+                                # 요청기간이 현시점이면 active_yn:>n
+                                if row.yearmonth==today_ym:
+                                    user_idx = mbr_df[mbr_df.user_id==user_id]["idx"].values[0]
+                                    update_cell("tbl_mbr_inf_snp", f"N{idx+2}", "n")
 
                         tmp_df = selected_df[["user_id", "yearmonth", "withdrawal_yn"]].reset_index(drop=True)
                         tmp_df['month_cnt'] = tmp_df['withdrawal_yn'].map({'신청': 1, '철회': -1})
