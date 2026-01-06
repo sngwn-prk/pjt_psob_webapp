@@ -235,10 +235,9 @@ def menu_dashboard():
 
         due_date_ym = mbr_user_df["due_date"].iloc[0].replace("'", "")
         st.markdown(f"- 회비 유효기한: {due_date_ym}")
-        
         cond1 = dormant_df["user_id"]==user_id
         cond2 = dormant_df["dormant_yn"]=="y"
-        cond3 = dormant_df["admin_check_yn"]=="y"
+        cond3 = dormant_df["dormant_admin_yn"]=="y"
         cond4 = dormant_df["valid_yn"]=="y"
         dormant_df = dormant_df[cond1&cond2&cond3&cond4].reset_index(drop=True)
         # 휴면으로 등록된 기간 리스트
@@ -710,7 +709,10 @@ def menu_dormant_request():
                         "server_nick": user_nick,
                         "yearmonth": yearmonth_lst,
                         "dormant_yn": "y",
-                        "admin_check_yn": "n",
+                        "dormant_admin_yn": "y",
+                        "dormant_admin_yn": "n",
+                        "withdrawal_yn": "n",
+                        "withdrawal_admin_yn": "n",
                         "valid_yn": "y"
                     })
                     if len(df) >= 1:
@@ -728,15 +730,16 @@ def menu_dormant_request():
     elif selected_menu_dormant_req==menu_items_dormant_req[1]:
         cond1 = dormant_df["user_id"]==user_id
         cond2 = dormant_df["dormant_yn"]=="y"
-        cond3 = dormant_df["admin_check_yn"]=="y"
-        cond4 = dormant_df["valid_yn"]=="y"
-        user_df = dormant_df[cond1&cond2&cond3&cond4].reset_index(drop=True)
+        cond3 = dormant_df["dormant_admin_yn"]=="y"
+        cond4 = dormant_df["withdrawal_yn"]=="n"
+        cond5 = dormant_df["withdrawal_admin_yn"]=="n"
+        cond6 = dormant_df["valid_yn"]=="y"
+        user_df = dormant_df[cond1&cond2&cond3&cond4&cond5&cond6].reset_index(drop=True)
         user_df["select_yn"] = False
         st.markdown("##### 휴면 철회")
         with st.form(key="request_dormant_form_cancel"):
             today_str = date.today().strftime("%Y%m%d")
             st.markdown("운영진이 승인한 휴면 요청 목록입니다.")
-
             edit_df = st.data_editor(
                 user_df,
                 column_config={
@@ -752,18 +755,14 @@ def menu_dormant_request():
             dormant_req_btn2 = st.form_submit_button("요청", key="dormant_req_btn2", use_container_width=True)
             if dormant_req_btn2:
                 with st.spinner(f"In progress...", show_time=True):
-                    cond1 = edit_df["select_yn"]==True
-                    cond2 = edit_df["admin_check_yn"]=="y"
-                    selected_df = edit_df[cond1 & cond2].reset_index(drop=True)
-                    if len(selected_df) >= 1:
+                    selected_df = edit_df[edit_df["select_yn"]==True].reset_index(drop=True)
+                    if len(selected_df)>=1:
                         for _, row in selected_df.iterrows():
                             idx = row["idx"]
                             # request_date 업데이트
                             update_cell("tbl_mbr_dormant_his", f"A{idx+2}", "'"+today_str)
-                            # dormant_yn 업데이트
-                            update_cell("tbl_mbr_dormant_his", f"E{idx+2}", "n")
-                            # admin_check_yn 업데이트
-                            update_cell("tbl_mbr_dormant_his", f"F{idx+2}", "n")
+                            # withdrawal_yn 업데이트
+                            update_cell("tbl_mbr_dormant_his", f"G{idx+2}", "y")
                         st.session_state["dormant_req_msg2"] = ("success", "요청 완료되었습니다.")
                         st.rerun()
                     else:
@@ -775,12 +774,14 @@ def menu_dormant_request():
     st.markdown("- 요청 중 또는 운영진이 승인한 휴면 내역입니다.")
     cond1 = dormant_df["user_id"]==user_id
     cond2 = dormant_df["dormant_yn"]=="y"
-    cond3 = dormant_df["valid_yn"]=="y"
-    disp_df = dormant_df[cond1&cond2&cond3].reset_index(drop=True)
+    cond3 = dormant_df["withdrawal_yn"]=="n"
+    cond4 = dormant_df["withdrawal_admin_yn"]=="n"
+    cond5 = dormant_df["valid_yn"]=="y"    
+    disp_df = dormant_df[cond1&cond2&cond3&cond4&cond5].reset_index(drop=True)
     disp_df.columns = [
         "요청일자" if col == "request_date" else
         "휴면기간" if col == "yearmonth" else
-        "상태" if col == "admin_check_yn" else col
+        "상태" if col == "withdrawal_admin_yn" else col
         for col in disp_df.columns
     ]
     disp_df = disp_df[["요청일자", "휴면기간", "상태"]]
@@ -851,18 +852,19 @@ def menu_request_status():
 
     st.markdown("##### 2. 휴면 요청 현황")
     with st.form(key="request_status_form2"):
-        cond1 = dormant_df["user_id"] == user_id
-        cond2 = dormant_df["admin_check_yn"] == "n"
-        cond3 = dormant_df["valid_yn"] == "y"
-        df2 = dormant_df[cond1&cond2&cond3].reset_index(drop=True)
+        cond1 = dormant_df["user_id"]==user_id
+        cond2 = dormant_df["dormant_yn"]=="y"
+        cond3 = dormant_df["withdrawal_admin_yn"]=="n"
+        cond4 = dormant_df["valid_yn"] == "y"
+        df2 = dormant_df[cond1&cond2&cond3&cond4].reset_index(drop=True)
         df2['cancel_yn'] = False
-        df2["dormant_yn"] = df2["dormant_yn"].map({"y": "신청", "n": "철회"}).fillna(df2["dormant_yn"])
+        df2["dormant_admin_yn"] = df2["dormant_admin_yn"].map({"y": "철회", "n": "신청"}).fillna(df2["dormant_admin_yn"])
         edit_df2 = st.data_editor(
             df2,
             column_config={
                 "cancel_yn": st.column_config.CheckboxColumn("취소", disabled=False, default=False),
                 "yearmonth": st.column_config.TextColumn("대상 기간", disabled=True),
-                "dormant_yn": st.column_config.TextColumn("요청 유형", disabled=True),
+                "dormant_admin_yn": st.column_config.TextColumn("요청 유형", disabled=True),
             },
             column_order=["cancel_yn", "yearmonth", "dormant_yn"],
             num_rows="fixed",
@@ -879,7 +881,7 @@ def menu_request_status():
                     idx_lst = edit_df2["idx"].unique().tolist()
                     for idx in idx_lst:
                         # valid_yn 업데이트
-                        update_cell("tbl_mbr_dormant_his", f"G{idx+2}", "n")
+                        update_cell("tbl_mbr_dormant_his", f"I{idx+2}", "n")
                     st.session_state["req_status_msg2"] = ("success", "요청 취소되었습니다.")
                     st.rerun()
                 else:
@@ -1019,21 +1021,22 @@ def menu_admin_approval():
     st.markdown("##### 2. 휴면 요청 현황")
     approval_btn2, reject_btn2 = False, False
     with st.form(key="req_approval_form2"):
-        cond1 = dormant_df["admin_check_yn"] == "n"
-        cond2 = dormant_df["valid_yn"] == "y"
-        dormant_df = dormant_df[cond1&cond2].reset_index(drop=True)
+        cond1 = dormant_df["dormant_yn"]=="y"
+        cond2 = dormant_df["withdrawal_admin_yn"]=="n"
+        cond3 = dormant_df["valid_yn"]=="y"
+        dormant_df = dormant_df[cond1&cond2&cond3].reset_index(drop=True)
 
         dormant_df["select_yn"] = False
-        dormant_df["dormant_yn"] = dormant_df["dormant_yn"].map({"y": "신청", "n": "철회"}).fillna(dormant_df["dormant_yn"])
+        dormant_df["withdrawal_yn"] = dormant_df["withdrawal_yn"].map({"y": "철회", "n": "신청"}).fillna(dormant_df["withdrawal_yn"])
         edit_df = st.data_editor(
             dormant_df,
             column_config={
                 "select_yn": st.column_config.CheckboxColumn("선택", disabled=False),
                 "server_nick": st.column_config.TextColumn("이름", disabled=True),
                 "yearmonth": st.column_config.TextColumn("대상 기간", disabled=True),
-                "dormant_yn": st.column_config.TextColumn("구분", disabled=True),
+                "withdrawal_yn": st.column_config.TextColumn("구분", disabled=True),
             },
-            column_order=["select_yn", "dormant_yn", "server_nick", "yearmonth"],
+            column_order=["select_yn", "withdrawal_yn", "server_nick", "yearmonth"],
             num_rows="fixed",
             hide_index=True,
             width="stretch",
@@ -1045,15 +1048,19 @@ def menu_admin_approval():
             if approval_btn2:
                 with st.spinner(f"In progress...", show_time=True):
                     edit_df["select_yn"] = edit_df["select_yn"].apply(lambda x: "y" if x else "n")
-                    selected_df = edit_df[edit_df["select_yn"] == "y"].reset_index(drop=True)
+                    selected_df = edit_df[edit_df["select_yn"]=="y"].reset_index(drop=True)
                     if len(selected_df) >= 1:
-                        # admin_check_yn 셀값 변경: n->y
                         for _, row in selected_df.iterrows():
                             idx = row["idx"]
-                            update_cell("tbl_mbr_dormant_his", f"F{idx+2}", "y")
+                            # withdrawal_admin_yn: n>y
+                            if row.withdrawal_yn=="철회":
+                                update_cell("tbl_mbr_dormant_his", f"H{idx+2}", "y")
+                            # dormant_admin_yn: n>y
+                            elif row.withdrawal_yn=="신청":
+                                update_cell("tbl_mbr_dormant_his", f"F{idx+2}", "y")
 
-                        tmp_df = selected_df[["user_id", "yearmonth", "dormant_yn"]].reset_index(drop=True)
-                        tmp_df['month_cnt'] = tmp_df['dormant_yn'].map({'신청': 1, '철회': -1})
+                        tmp_df = selected_df[["user_id", "yearmonth", "withdrawal_yn"]].reset_index(drop=True)
+                        tmp_df['month_cnt'] = tmp_df['withdrawal_yn'].map({'신청': 1, '철회': -1})
                         month_cnt_df = tmp_df.groupby('user_id', as_index=False)['month_cnt'].sum()
                         user_ids = month_cnt_df["user_id"].tolist()
 
@@ -1071,9 +1078,9 @@ def menu_admin_approval():
                         for idx, row in user_info_df.iterrows():
                             user_id = row["user_id"]
                             server_nick = row["server_nick"]
-                            user_charge_df = selected_df[selected_df["user_id"]==user_id][["request_date", "yearmonth", "dormant_yn"]].reset_index(drop=True)
-                            user_charge_df["dormant_yn"] = user_charge_df["dormant_yn"].map({"y": "신청", "n": "철회"}).fillna(user_charge_df["dormant_yn"])
-                            user_charge_df["dm_content"] = user_charge_df.apply(lambda x: f"- {x['request_date']} / {x['yearmonth']} / {x['dormant_yn']}", axis=1)
+                            user_charge_df = selected_df[selected_df["user_id"]==user_id][["request_date", "yearmonth", "withdrawal_yn"]].reset_index(drop=True)
+                            user_charge_df["withdrawal_yn"] = user_charge_df["withdrawal_yn"].map({"y": "철회", "n": "신청"}).fillna(user_charge_df["withdrawal_yn"])
+                            user_charge_df["dm_content"] = user_charge_df.apply(lambda x: f"- {x['request_date']} / {x['yearmonth']} / {x['withdrawal_yn']}", axis=1)
                             dm_content_lst = user_charge_df["dm_content"].tolist()
                             dm_content = "\n".join(dm_content_lst)
                             msg = f"""## [DM] 휴면 요청 결과 알림(승인)
@@ -1099,16 +1106,23 @@ def menu_admin_approval():
                         # valid_yn 셀값 변경: n->y
                         for _, row in selected_df.iterrows():
                             idx = row["idx"]
-                            update_cell("tbl_mbr_dormant_his", f"G{idx+2}", "n")
+                            # valid_yn:y>n
+                            update_cell("tbl_mbr_dormant_his", f"I{idx+2}", "n")
+                            # withdrawal_admin_yn: n>y
+                            if row.withdrawal_yn=="철회":
+                                update_cell("tbl_mbr_dormant_his", f"H{idx+2}", "y")
+                            # dormant_admin_yn: n>y
+                            elif row.withdrawal_yn=="신청":
+                                update_cell("tbl_mbr_dormant_his", f"F{idx+2}", "y")
 
                         # DM 발송
                         user_info_df = selected_df[["user_id", "server_nick"]].drop_duplicates().reset_index(drop=True)
                         for idx, row in user_info_df.iterrows():
                             user_id = row["user_id"]
                             server_nick = row["server_nick"]
-                            user_charge_df = selected_df[selected_df["user_id"]==user_id][["request_date", "yearmonth", "dormant_yn"]].reset_index(drop=True)
-                            user_charge_df["dormant_yn"] = user_charge_df["dormant_yn"].map({"y": "신청", "n": "철회"}).fillna(user_charge_df["dormant_yn"])
-                            user_charge_df["dm_content"] = user_charge_df.apply(lambda x: f"- {x['request_date']} / {x['yearmonth']} / {x['dormant_yn']}", axis=1)
+                            user_charge_df = selected_df[selected_df["user_id"]==user_id][["request_date", "yearmonth", "withdrawal_yn"]].reset_index(drop=True)
+                            user_charge_df["withdrawal_yn"] = user_charge_df["withdrawal_yn"].map({"y": "철회", "n": "신청"}).fillna(user_charge_df["withdrawal_yn"])
+                            user_charge_df["dm_content"] = user_charge_df.apply(lambda x: f"- {x['request_date']} / {x['yearmonth']} / {x['withdrawal_yn']}", axis=1)
                             dm_content_lst = user_charge_df["dm_content"].tolist()
                             dm_content = "\n".join(dm_content_lst)
                             msg = f"""## [DM] 휴면 요청 결과 알림(반려)
