@@ -53,10 +53,8 @@ def format_phone_number(phone):
     try:
         if isinstance(phone, float):
             phone = int(phone)
-        
         phone_str = str(phone).replace('.0', '')
-        
-        if len(phone_str) == 10 and phone_str.isdigit():
+        if len(phone_str)==10 and phone_str.isdigit():
             return f"0{phone_str}"
         else:
             return phone_str
@@ -113,9 +111,11 @@ def read_sheet(sheetname:str):
             "yearmonth", "poll_date", "deposit_date", "amount", "date_partition", 
             "mbr_cnt", "active_mbr_cnt", "warm_mbr_cnt", "attendant_mbr_cnt", "not_voted_mbr_cnt"
         ]
+        a["x"] = df["x"].astype(str)
         for key in keys:
             if key in df.columns:
                 df[key] = df[key].apply(lambda x: str(int(x)) if pd.notnull(x) else None)
+                df[key] = df[key].astype(str)
         keys = ["lat", "lng"]
         for key in keys:
             if key in df.columns:
