@@ -489,7 +489,7 @@ def menu_charge_req():
                             "valid_yn": "y"
                         }])
                         add_data("tbl_charge_inf_his", df)
-                        st.session_state["charge_req_msg1"] = ("success", "요청 완료되었습니다.")
+                        st.session_state["charge_req_msg1"] = ("success", "요청 완료되었습니다. {month_cnt}개월 {amount}원")
                         st.rerun()
                     else:
                         st.session_state["charge_req_msg1"] = ("warning", "납부기간을 입력해주세요.")
