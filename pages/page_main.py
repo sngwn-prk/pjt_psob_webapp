@@ -18,7 +18,6 @@ import folium
 from streamlit_folium import st_folium
 
 WEBAPP_NAME = "PowerSupplyOB"
-YEAR = datetime.now().strftime("%Y")
 # SLEEP_SEC_CHANGE_DATA = 0.05 # 데이터 입력 딜레이
 
 # load_dotenv()
@@ -1234,4 +1233,4 @@ def page_main():
 
     # 하단 기본 정보
     st.divider()
-    st.caption(f"© {YEAR} {WEBAPP_NAME}. All rights reserved.")
+    st.caption(f"© {today_yyyy} {WEBAPP_NAME}. All rights reserved.")
