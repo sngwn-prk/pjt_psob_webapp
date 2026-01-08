@@ -8,7 +8,7 @@ import time
 import requests
 import pandas as pd
 from collections import defaultdict
-from datetime import datetime, timedelta, date
+from datetime import datetime, timedelta, date, timezone
 from dateutil.relativedelta import relativedelta
 from dotenv import load_dotenv
 from tenacity import retry, stop_after_attempt, wait_exponential
@@ -26,6 +26,8 @@ YEAR = datetime.now().strftime("%Y")
 # Streamlit Folium
 # import folium
 # from streamlit_folium import st_folium
+
+
 
 # Discord API
 SLEEP_SEC_SEND_DM = 0.01
@@ -47,7 +49,11 @@ SLEEP_SEC_UPDATE_CELL = 0.01 # 구글 스프레드 시트
 SLEEP_SEC_ADD_DATA = 0.01 # 구글 스프레드 시트
 # SPREADSHEET_URL = st.secrets["SPREADSHEET_URL"]
 
-YEAR = datetime.now().strftime("%Y")
+kst_now = datetime.now(timezone(timedelta(hours=9)))
+today = kst_now.date()
+today_yyyymmdd = today.strftime("%Y%m%d")
+today_yyyymm = today.strftime("%Y%m")
+today_yyyy = today.strftime("%Y")
 
 def format_phone_number(phone):
     try:
@@ -241,7 +247,6 @@ def menu_dashboard():
         dormant_df = dormant_df[cond1&cond2&cond3&cond4].reset_index(drop=True)
         # 휴면으로 등록된 기간 리스트
         dormant_ym_lst = dormant_df["yearmonth"].tolist()
-        today_ym = datetime.now().strftime("%Y%m")
 
         def get_ym_lst(start_ym:str, end_ym:str):
             ym_lst = []
@@ -252,8 +257,8 @@ def menu_dashboard():
                 curr += relativedelta(months=1)
             return ym_lst
 
-        if today_ym >= due_date_ym: # 유효기한이 과거/현재인 경우: 유효기한 ~ 현재
-            ym_lst = get_ym_lst(due_date_ym, today_ym)            
+        if today_yyyymm >= due_date_ym: # 유효기한이 과거/현재인 경우: 유효기한 ~ 현재
+            ym_lst = get_ym_lst(due_date_ym, today_yyyymm)            
             status_lst = []
             for ym in ym_lst:
                 if ym in dormant_ym_lst:
@@ -268,7 +273,7 @@ def menu_dashboard():
                 "dormant_yn": status_lst
             })
         else:
-            ym_lst = get_ym_lst(today_ym, due_date_ym)
+            ym_lst = get_ym_lst(today_yyyymm, due_date_ym)
             status_lst = []
             for ym in ym_lst:
                 if ym in dormant_ym_lst:
@@ -434,8 +439,7 @@ def menu_charge_req():
     )
     st.markdown("---")
 
-    today = date.today()
-    request_date = today.strftime("%Y%m%d")
+    request_date = today_yyyymmdd
     user_id = st.session_state.get("user_id", "")
     server_nick = st.session_state.get("server_nick", "")
     user_check_yn = "y"
@@ -686,8 +690,6 @@ def menu_dormant_request():
     if selected_menu_dormant_req==menu_items_dormant_req[0]:
         st.markdown("##### 휴면 신청")
         with st.form(key="request_dormant_form_apply"):
-            today = datetime.today()
-            today_str = today.strftime("%Y%m%d")
             # 요청 날짜 연월 기준 향후 12개월
             ym_list = [
                 (today + relativedelta(months=+i)).strftime("%Y%m")
@@ -717,7 +719,7 @@ def menu_dormant_request():
                         cur_ym += relativedelta(months=1)
 
                     df = pd.DataFrame({
-                        "request_date": today_str,
+                        "request_date": today_yyyymmdd,
                         "user_id": user_id,
                         "server_nick": user_nick,
                         "yearmonth": yearmonth_lst,
@@ -751,7 +753,6 @@ def menu_dormant_request():
         user_df["select_yn"] = False
         st.markdown("##### 휴면 철회")
         with st.form(key="request_dormant_form_cancel"):
-            today_str = date.today().strftime("%Y%m%d")
             st.markdown("운영진이 승인한 휴면 요청 목록입니다.")
             edit_df = st.data_editor(
                 user_df,
@@ -773,7 +774,7 @@ def menu_dormant_request():
                         for _, row in selected_df.iterrows():
                             idx = row["idx"]
                             # request_date 업데이트
-                            update_cell("tbl_mbr_dormant_his", f"A{idx+2}", "'"+today_str)
+                            update_cell("tbl_mbr_dormant_his", f"A{idx+2}", "'"+today_yyyymmdd)
                             # withdrawal_yn 업데이트
                             update_cell("tbl_mbr_dormant_his", f"G{idx+2}", "y")
                         st.session_state["dormant_req_msg2"] = ("success", "요청 완료되었습니다.")
@@ -943,9 +944,8 @@ def menu_admin_approval():
             approval_btn1 = st.form_submit_button("승인", key="approval_btn1", width="stretch")
             if approval_btn1:
                 with st.spinner(f"In progress...", show_time=True):
-                    today_str = "'"+datetime.today().strftime("%Y%m%d")
-                    edit_df["deposit_date"] = edit_df["deposit_date"].replace('', today_str)
-                    edit_df["deposit_date"] = edit_df["deposit_date"].fillna(today_str)
+                    edit_df["deposit_date"] = edit_df["deposit_date"].replace('', today_yyyymmdd)
+                    edit_df["deposit_date"] = edit_df["deposit_date"].fillna(today_yyyymmdd)
                     edit_df["select_yn"] = edit_df["select_yn"].apply(lambda x: "y" if x else "n")
                     selected_df = edit_df[edit_df["select_yn"] == "y"].reset_index(drop=True)
                     if len(selected_df) >= 1:
@@ -1063,7 +1063,6 @@ def menu_admin_approval():
             approval_btn2 = st.form_submit_button("승인", key="approval_btn2", use_container_width=True)
             if approval_btn2:
                 with st.spinner(f"In progress...", show_time=True):
-                    today_ym = datetime.now().strftime("%Y%m")
                     edit_df["select_yn"] = edit_df["select_yn"].apply(lambda x: "y" if x else "n")
                     selected_df = edit_df[edit_df["select_yn"]=="y"].reset_index(drop=True)
                     if len(selected_df) >= 1:
@@ -1073,14 +1072,14 @@ def menu_admin_approval():
                             if row.withdrawal_yn=="철회":
                                 update_cell("tbl_mbr_dormant_his", f"H{idx+2}", "y")
                                 # 요청기간이 현시점이면 active_yn:>y
-                                if row.yearmonth==today_ym:
+                                if row.yearmonth==today_yyyymm:
                                     user_idx = mbr_df[mbr_df.user_id==user_id]["idx"].values[0]
                                     update_cell("tbl_mbr_inf_snp", f"N{user_idx+2}", "y")
                             # dormant_admin_yn: n>y
                             elif row.withdrawal_yn=="신청":
                                 update_cell("tbl_mbr_dormant_his", f"F{idx+2}", "y")
                                 # 요청기간이 현시점이면 active_yn:>n
-                                if row.yearmonth==today_ym:
+                                if row.yearmonth==today_yyyymm:
                                     user_idx = mbr_df[mbr_df.user_id==user_id]["idx"].values[0]
                                     update_cell("tbl_mbr_inf_snp", f"N{user_idx+2}", "n")
 
