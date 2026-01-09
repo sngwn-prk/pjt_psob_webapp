@@ -492,7 +492,7 @@ def menu_charge_req():
                             "valid_yn": "y"
                         }])
                         add_data("tbl_charge_inf_his", df)
-                        st.session_state["charge_req_msg1"] = ("success", "요청 완료되었습니다. {month_cnt}개월 {amount}원")
+                        st.session_state["charge_req_msg1"] = ("success", f"요청 완료되었습니다. {month_cnt}개월 {amount}원")
                         st.rerun()
                     else:
                         st.session_state["charge_req_msg1"] = ("warning", "납부기간을 입력해주세요.")
@@ -579,10 +579,8 @@ def menu_charge_req():
                             df = df[(df["amount"]!=0) & (df["amount"].notnull())].reset_index(drop=True)
                             if len(df) > 0:
                                 add_data("tbl_charge_inf_his", df)
-                                st.session_state["charge_req_msg2"] = ("success", f"요청 완료되었습니다. 합계 금액: {total_amount:,}원")
-                                st.rerun()
-                            else:
-                                st.session_state["charge_req_msg2"] = ("warning", "요청할 데이터가 없습니다.")
+                        st.session_state["charge_req_msg2"] = ("success", f"요청 완료되었습니다. 합계 금액: {total_amount:,}원")
+                        st.rerun()
                     else:
                         st.session_state["charge_req_msg2"] = ("warning", "요청할 데이터가 없습니다.")
             show_msg("charge_req_msg2")
