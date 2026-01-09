@@ -1,5 +1,6 @@
 # Python Standard Packages
 import streamlit as st
+from contextlib import contextmanager
 import re
 import time
 import os
@@ -54,6 +55,11 @@ today_yyyymmdd = today.strftime("%Y%m%d")
 today_yyyymm = today.strftime("%Y%m")
 today_yyyy = today.strftime("%Y")
 
+def custom_rerun():
+    st.cache_data.clear()
+    st.cache_resource.clear()
+    st.rerun()
+
 def format_phone_number(phone):
     try:
         if isinstance(phone, float):
@@ -66,6 +72,7 @@ def format_phone_number(phone):
     except:
         return str(phone)
 
+@contextmanager
 @retry(stop=stop_after_attempt(5), wait=wait_exponential(multiplier=0.01, min=0.05, max=0.1))
 def get_sheet_instance(sheet_name):
     connection_info = st.secrets["connections"][sheet_name]
@@ -89,21 +96,46 @@ def get_sheet_instance(sheet_name):
         service_account_info, 
         scopes=scope
     )
-    gc = gspread.authorize(credentials)
-    spreadsheet_url = connection_info["spreadsheet"]
-    spreadsheet = gc.open_by_url(spreadsheet_url)
-    worksheet = spreadsheet.worksheet(sheet_name)
-    return worksheet
+    # gc = gspread.authorize(credentials)
+    # spreadsheet_url = connection_info["spreadsheet"]
+    # spreadsheet = gc.open_by_url(spreadsheet_url)
+    # worksheet = spreadsheet.worksheet(sheet_name)
+    # return worksheet
+    client = gspread.authorize(credentials)
+    try:
+        spreadsheet_url = connection_info["spreadsheet"]
+        spreadsheet = client.open_by_url(spreadsheet_url)
+        worksheet = spreadsheet.worksheet(sheet_name)
+        yield worksheet
+    finally:
+        # 연결 명시적 종료
+        try:
+            if hasattr(client, 'auth'):
+                client.auth.revoke()  # OAuth 토큰 폐기
+        except:
+            pass
+        # HTTP 세션 종료
+        try:
+            if hasattr(client, 'auth') and hasattr(client.auth, 'session'):
+                client.auth.session.close()
+        except:
+            pass
 
-@st.cache_data(ttl=30) 
+# @st.cache_data(ttl=30) 
 @retry(stop=stop_after_attempt(5), wait=wait_exponential(multiplier=0.01, min=0.05, max=0.1))
 def read_sheet(sheetname:str):
     """
     지정된 시트의 데이터를 읽어옵니다.
     """
     try:
-        conn = st.connection(sheetname, type=GSheetsConnection, ttl=0)
-        df = conn.read(worksheet=sheetname, ttl=0)
+        # conn = st.connection(sheetname, type=GSheetsConnection, ttl=0)
+        # df = conn.read(worksheet=sheetname, ttl=0)
+        with get_gsheet_worksheet(sheetname) as worksheet:
+            records = worksheet.get_all_records()
+        
+        if not records:
+            return None
+            
         df = df.copy()
         if "user_id" in df.columns:
             df["user_id"] = df["user_id"].astype(str).apply(lambda x: x.replace("mbr", ""))
@@ -495,7 +527,7 @@ def menu_charge_req():
                         }])
                         add_data("tbl_charge_inf_his", df)
                         st.session_state["charge_req_msg1"] = ("success", f"요청 완료되었습니다. {month_cnt}개월 {amount:,}원")
-                        st.rerun()
+                        custom_rerun()
                     else:
                         st.session_state["charge_req_msg1"] = ("warning", "납부기간을 입력해주세요.")
             show_msg("charge_req_msg1")
@@ -582,7 +614,7 @@ def menu_charge_req():
                             if len(df) > 0:
                                 add_data("tbl_charge_inf_his", df)
                         st.session_state["charge_req_msg2"] = ("success", f"요청 완료되었습니다. 합계 금액: {total_amount:,}원")
-                        st.rerun()
+                        custom_rerun()
                     else:
                         st.session_state["charge_req_msg2"] = ("warning", "요청할 데이터가 없습니다.")
             show_msg("charge_req_msg2")
@@ -662,7 +694,7 @@ def menu_charge_req():
                             if len(df) > 0:
                                 add_data("tbl_charge_inf_his", df)
                                 st.session_state["charge_req_msg3"] = ("success", f"요청 완료되었습니다. 합계 금액: {total_amount:,}원")
-                                st.rerun()
+                                custom_rerun()
                             else:
                                 st.session_state["charge_req_msg3"] = ("warning", "요청할 데이터가 없습니다.")
                         else:
@@ -736,7 +768,7 @@ def menu_dormant_request():
                         else:
                             add_data("tbl_mbr_dormant_his", df)
                             st.session_state["dormant_req_msg1"] = ("success", "요청 완료되었습니다.")
-                            st.rerun()
+                            custom_rerun()
                     else:
                         st.session_state["dormant_req_msg1"] = ("warning", "요청할 데이터가 없습니다.")
             show_msg("dormant_req_msg1")
@@ -777,7 +809,7 @@ def menu_dormant_request():
                             # withdrawal_yn 업데이트
                             update_cell("tbl_mbr_dormant_his", f"G{idx+2}", "y")
                         st.session_state["dormant_req_msg2"] = ("success", "요청 완료되었습니다.")
-                        st.rerun()
+                        custom_rerun()
                     else:
                         st.session_state["dormant_req_msg2"] = ("warning", "요청할 데이터가 없습니다.")
             show_msg("dormant_req_msg2")
@@ -859,7 +891,7 @@ def menu_request_status():
                         # valid_yn 업데이트
                         update_cell("tbl_charge_inf_his", f"J{idx+2}", "n")
                     st.session_state["req_status_msg1"] = ("success", "요청 취소되었습니다.")
-                    st.rerun()
+                    custom_rerun()
                 else:
                     st.session_state["req_status_msg1"] = ("warning", "요청 취소할 데이터가 없습니다.")
         show_msg("req_status_msg1")
@@ -897,7 +929,7 @@ def menu_request_status():
                         # valid_yn 업데이트
                         update_cell("tbl_mbr_dormant_his", f"I{idx+2}", "n")
                     st.session_state["req_status_msg2"] = ("success", "요청 취소되었습니다.")
-                    st.rerun()
+                    custom_rerun()
                 else:
                     st.session_state["req_status_msg2"] = ("warning", "요청 취소할 데이터가 없습니다.")
         show_msg("req_status_msg2")
@@ -985,7 +1017,7 @@ def menu_admin_approval():
                             send_dm(user_id, server_nick, msg)
 
                         st.session_state["msg1"] = ("success", "승인이 완료되었습니다.")
-                        st.rerun()
+                        custom_rerun()
                     else:
                         st.session_state["msg1"] = ("warning", "승인할 데이터가 없습니다.")
         with col2:
@@ -1027,7 +1059,7 @@ def menu_admin_approval():
                             send_dm(user_id, server_nick, msg)
 
                         st.session_state["msg1"] = ("success", "반려가 완료되었습니다.")
-                        st.rerun()
+                        custom_rerun()
                     else:
                         st.session_state["msg1"] = ("warning", "반려할 데이터가 없습니다.")
         show_msg("msg1")
@@ -1116,7 +1148,7 @@ def menu_admin_approval():
                             send_dm(user_id, server_nick, msg)
 
                         st.session_state['msg2'] = ("success", "승인이 완료되었습니다.")
-                        st.rerun()
+                        custom_rerun()
                     else:
                         st.session_state['msg2'] = ("warning", "승인할 데이터가 없습니다.")
         with col2:
@@ -1158,7 +1190,7 @@ def menu_admin_approval():
                             send_dm(user_id, server_nick, msg)
 
                         st.session_state['msg2'] = ("success", "반려가 완료되었습니다.")
-                        st.rerun()
+                        custom_rerun()
                     else:
                         st.session_state['msg2'] = ("warning", "반려할 데이터가 없습니다.")
         show_msg("msg2")
