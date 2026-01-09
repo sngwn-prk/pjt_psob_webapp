@@ -1,6 +1,5 @@
 # Python Standard Packages
 import streamlit as st
-from contextlib import contextmanager
 import re
 import time
 import os
@@ -72,7 +71,6 @@ def format_phone_number(phone):
     except:
         return str(phone)
 
-@contextmanager
 @retry(stop=stop_after_attempt(5), wait=wait_exponential(multiplier=0.01, min=0.05, max=0.1))
 def get_sheet_instance(sheet_name):
     connection_info = st.secrets["connections"][sheet_name]
@@ -96,30 +94,11 @@ def get_sheet_instance(sheet_name):
         service_account_info, 
         scopes=scope
     )
-    # gc = gspread.authorize(credentials)
-    # spreadsheet_url = connection_info["spreadsheet"]
-    # spreadsheet = gc.open_by_url(spreadsheet_url)
-    # worksheet = spreadsheet.worksheet(sheet_name)
-    # return worksheet
-    client = gspread.authorize(credentials)
-    try:
-        spreadsheet_url = connection_info["spreadsheet"]
-        spreadsheet = client.open_by_url(spreadsheet_url)
-        worksheet = spreadsheet.worksheet(sheet_name)
-        yield worksheet
-    finally:
-        # 연결 명시적 종료
-        try:
-            if hasattr(client, 'auth'):
-                client.auth.revoke()  # OAuth 토큰 폐기
-        except:
-            pass
-        # HTTP 세션 종료
-        try:
-            if hasattr(client, 'auth') and hasattr(client.auth, 'session'):
-                client.auth.session.close()
-        except:
-            pass
+    gc = gspread.authorize(credentials)
+    spreadsheet_url = connection_info["spreadsheet"]
+    spreadsheet = gc.open_by_url(spreadsheet_url)
+    worksheet = spreadsheet.worksheet(sheet_name)
+    return worksheet
 
 # @st.cache_data(ttl=30) 
 @retry(stop=stop_after_attempt(5), wait=wait_exponential(multiplier=0.01, min=0.05, max=0.1))
@@ -128,16 +107,9 @@ def read_sheet(sheetname:str):
     지정된 시트의 데이터를 읽어옵니다.
     """
     try:
-        # conn = st.connection(sheetname, type=GSheetsConnection, ttl=0)
-        # df = conn.read(worksheet=sheetname, ttl=0)
-        # df = df.copy()
-        
-        with get_gsheet_worksheet(sheetname) as worksheet:
-            records = worksheet.get_all_records()
-        
-        if not records:
-            return None
-        df = pd.DataFrame(records).copy()    
+        conn = st.connection(sheetname, type=GSheetsConnection, ttl=0)
+        df = conn.read(worksheet=sheetname, ttl=0)
+        df = df.copy()
         
         if "user_id" in df.columns:
             df["user_id"] = df["user_id"].astype(str).apply(lambda x: x.replace("mbr", ""))
