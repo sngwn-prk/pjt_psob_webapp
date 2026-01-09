@@ -130,13 +130,15 @@ def read_sheet(sheetname:str):
     try:
         # conn = st.connection(sheetname, type=GSheetsConnection, ttl=0)
         # df = conn.read(worksheet=sheetname, ttl=0)
+        # df = df.copy()
+        
         with get_gsheet_worksheet(sheetname) as worksheet:
             records = worksheet.get_all_records()
         
         if not records:
             return None
-            
-        df = df.copy()
+        df = pd.DataFrame(records).copy()    
+        
         if "user_id" in df.columns:
             df["user_id"] = df["user_id"].astype(str).apply(lambda x: x.replace("mbr", ""))
         if "poll_id" in df.columns:
