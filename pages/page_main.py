@@ -1,5 +1,6 @@
 # Python Standard Packages
 import streamlit as st
+from contextlib import contextmanager
 import re
 import time
 import os
@@ -26,8 +27,6 @@ WEBAPP_NAME = "PowerSupplyOB"
 # import folium
 # from streamlit_folium import st_folium
 
-
-
 # Discord API
 SLEEP_SEC_SEND_DM = 0.01
 DISCORD_BOT_TOKEN = st.secrets["DISCORD_BOT_TOKEN"]
@@ -46,7 +45,6 @@ from google.oauth2.service_account import Credentials
 SLEEP_SEC_READ_SHEET = 0.03 # 구글 스프레드 시트
 SLEEP_SEC_UPDATE_CELL = 0.01 # 구글 스프레드 시트
 SLEEP_SEC_ADD_DATA = 0.01 # 구글 스프레드 시트
-# SPREADSHEET_URL = st.secrets["SPREADSHEET_URL"]
 
 kst_now = datetime.now(timezone(timedelta(hours=9)))
 today = kst_now.date()
@@ -71,6 +69,7 @@ def format_phone_number(phone):
     except:
         return str(phone)
 
+@contextmanager
 @retry(stop=stop_after_attempt(5), wait=wait_exponential(multiplier=0.01, min=0.05, max=0.1))
 def get_sheet_instance(sheet_name):
     connection_info = st.secrets["connections"][sheet_name]
@@ -95,10 +94,24 @@ def get_sheet_instance(sheet_name):
         scopes=scope
     )
     gc = gspread.authorize(credentials)
-    spreadsheet_url = connection_info["spreadsheet"]
-    spreadsheet = gc.open_by_url(spreadsheet_url)
-    worksheet = spreadsheet.worksheet(sheet_name)
-    return worksheet
+    
+    # spreadsheet_url = connection_info["spreadsheet"]
+    # spreadsheet = gc.open_by_url(spreadsheet_url)
+    # worksheet = spreadsheet.worksheet(sheet_name)
+    # return worksheet
+    
+    try:
+        spreadsheet_url = connection_info["spreadsheet"]
+        spreadsheet = gc.open_by_url(spreadsheet_url)
+        worksheet = spreadsheet.worksheet(sheet_name)
+        yield worksheet
+    finally:
+        # 리소스 정리 (중요!)
+        try:
+            gc.auth.transport.close()
+        except:
+            pass
+    
 
 # @st.cache_data(ttl=30) 
 @retry(stop=stop_after_attempt(5), wait=wait_exponential(multiplier=0.01, min=0.05, max=0.1))
