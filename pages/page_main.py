@@ -95,6 +95,7 @@ def get_sheet_instance(sheet_name):
     worksheet = spreadsheet.worksheet(sheet_name)
     return worksheet
 
+@st.cache_data(ttl=30) 
 @retry(stop=stop_after_attempt(5), wait=wait_exponential(multiplier=0.01, min=0.05, max=0.1))
 def read_sheet(sheetname:str):
     """
