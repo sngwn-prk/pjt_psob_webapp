@@ -57,6 +57,14 @@ def custom_rerun():
     st.cache_resource.clear()
     st.rerun()
 
+def close_gc():
+    try:
+        gc = st.session_state["gc"]
+        gc.auth.transport.close()
+        del st.session_state["gc"]
+    except:
+        pass
+
 def format_phone_number(phone):
     try:
         if isinstance(phone, float):
@@ -94,24 +102,12 @@ def get_sheet_instance(sheet_name):
         scopes=scope
     )
     gc = gspread.authorize(credentials)
+    st.session_state["gc"] = gc
     
-    # spreadsheet_url = connection_info["spreadsheet"]
-    # spreadsheet = gc.open_by_url(spreadsheet_url)
-    # worksheet = spreadsheet.worksheet(sheet_name)
-    # return worksheet
-    
-    try:
-        spreadsheet_url = connection_info["spreadsheet"]
-        spreadsheet = gc.open_by_url(spreadsheet_url)
-        worksheet = spreadsheet.worksheet(sheet_name)
-        yield worksheet
-    finally:
-        # 리소스 정리 (중요!)
-        try:
-            gc.auth.transport.close()
-        except:
-            pass
-    
+    spreadsheet_url = connection_info["spreadsheet"]
+    spreadsheet = gc.open_by_url(spreadsheet_url)
+    worksheet = spreadsheet.worksheet(sheet_name)
+    return worksheet    
 
 # @st.cache_data(ttl=30) 
 @retry(stop=stop_after_attempt(5), wait=wait_exponential(multiplier=0.01, min=0.05, max=0.1))
@@ -164,8 +160,10 @@ def add_data(sheetname:str, df):
         values = df.values.tolist()
         sheet.append_rows(values, value_input_option="RAW")
         time.sleep(SLEEP_SEC_ADD_DATA)
+        close_gc()
         return True
     except Exception as e:
+        close_gc()
         return False
 
 @retry(stop=stop_after_attempt(5), wait=wait_exponential(multiplier=0.01, min=0.05, max=0.1))
@@ -179,8 +177,10 @@ def update_cell(sheetname, cell, value):
         if sheet:
             sheet.update_acell(cell, value)
             time.sleep(SLEEP_SEC_UPDATE_CELL)
+            close_gc()
             return True
     except Exception as e:
+        close_gc()
         return False
 
 def show_msg(key:str):
