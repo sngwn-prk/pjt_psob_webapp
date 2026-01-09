@@ -43,34 +43,34 @@ def format_phone_number(phone):
     except:
         return str(phone)
 
-@retry(stop=stop_after_attempt(5), wait=wait_exponential(multiplier=0.01, min=0.05, max=0.1))
-def get_sheet_instance(sheet_name):
-    connection_info = st.secrets["connections"][sheet_name]
-    service_account_info = {
-        "type": connection_info["type"],
-        "project_id": connection_info["project_id"],
-        "private_key_id": connection_info["private_key_id"],
-        "private_key": connection_info["private_key"],
-        "client_email": connection_info["client_email"],
-        "client_id": connection_info["client_id"],
-        "auth_uri": connection_info["auth_uri"],
-        "token_uri": connection_info["token_uri"],
-        "auth_provider_x509_cert_url": connection_info["auth_provider_x509_cert_url"],
-        "client_x509_cert_url": connection_info["client_x509_cert_url"]
-    }
-    scope = [
-        "https://spreadsheets.google.com/feeds",
-        "https://www.googleapis.com/auth/drive",
-    ]
-    credentials = Credentials.from_service_account_info(
-        service_account_info, 
-        scopes=scope
-    )
-    gc = gspread.authorize(credentials)
-    spreadsheet_url = connection_info["spreadsheet"]
-    spreadsheet = gc.open_by_url(spreadsheet_url)
-    worksheet = spreadsheet.worksheet(sheet_name)
-    return worksheet
+# @retry(stop=stop_after_attempt(5), wait=wait_exponential(multiplier=0.01, min=0.05, max=0.1))
+# def get_sheet_instance(sheet_name):
+#     connection_info = st.secrets["connections"][sheet_name]
+#     service_account_info = {
+#         "type": connection_info["type"],
+#         "project_id": connection_info["project_id"],
+#         "private_key_id": connection_info["private_key_id"],
+#         "private_key": connection_info["private_key"],
+#         "client_email": connection_info["client_email"],
+#         "client_id": connection_info["client_id"],
+#         "auth_uri": connection_info["auth_uri"],
+#         "token_uri": connection_info["token_uri"],
+#         "auth_provider_x509_cert_url": connection_info["auth_provider_x509_cert_url"],
+#         "client_x509_cert_url": connection_info["client_x509_cert_url"]
+#     }
+#     scope = [
+#         "https://spreadsheets.google.com/feeds",
+#         "https://www.googleapis.com/auth/drive",
+#     ]
+#     credentials = Credentials.from_service_account_info(
+#         service_account_info, 
+#         scopes=scope
+#     )
+#     gc = gspread.authorize(credentials)
+#     spreadsheet_url = connection_info["spreadsheet"]
+#     spreadsheet = gc.open_by_url(spreadsheet_url)
+#     worksheet = spreadsheet.worksheet(sheet_name)
+#     return worksheet
 
 @retry(stop=stop_after_attempt(5), wait=wait_exponential(multiplier=0.01, min=0.05, max=0.1))
 def read_sheet(sheetname:str):
@@ -102,7 +102,6 @@ def read_sheet(sheetname:str):
                 df[key] = df[key].apply(lambda x: float(x) if pd.notnull(x) else None)        
         return df
     except Exception as e:
-        print(e)
         return None
 
 def generate_verification_code():
@@ -140,7 +139,7 @@ def send_dm(user_id:str, server_nick:str, msg:str):
     except Exception as e:
         st.session_state.verification_message = {
             "type": "error",
-            "text": f"⚠️ DM 발송 중 오류 발생. 관리자에게 문의하세요."
+            "text": f"❌ DM 발송 중 오류 발생. 운영진에게 문의하세요."
         }
         return False
 
