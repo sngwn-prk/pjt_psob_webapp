@@ -42,36 +42,7 @@ def format_phone_number(phone):
             return phone_str
     except:
         return str(phone)
-
-# @retry(stop=stop_after_attempt(5), wait=wait_exponential(multiplier=0.01, min=0.05, max=0.1))
-# def get_sheet_instance(sheet_name):
-#     connection_info = st.secrets["connections"][sheet_name]
-#     service_account_info = {
-#         "type": connection_info["type"],
-#         "project_id": connection_info["project_id"],
-#         "private_key_id": connection_info["private_key_id"],
-#         "private_key": connection_info["private_key"],
-#         "client_email": connection_info["client_email"],
-#         "client_id": connection_info["client_id"],
-#         "auth_uri": connection_info["auth_uri"],
-#         "token_uri": connection_info["token_uri"],
-#         "auth_provider_x509_cert_url": connection_info["auth_provider_x509_cert_url"],
-#         "client_x509_cert_url": connection_info["client_x509_cert_url"]
-#     }
-#     scope = [
-#         "https://spreadsheets.google.com/feeds",
-#         "https://www.googleapis.com/auth/drive",
-#     ]
-#     credentials = Credentials.from_service_account_info(
-#         service_account_info, 
-#         scopes=scope
-#     )
-#     gc = gspread.authorize(credentials)
-#     spreadsheet_url = connection_info["spreadsheet"]
-#     spreadsheet = gc.open_by_url(spreadsheet_url)
-#     worksheet = spreadsheet.worksheet(sheet_name)
-#     return worksheet
-
+        
 @retry(stop=stop_after_attempt(5), wait=wait_exponential(multiplier=0.01, min=0.05, max=0.1))
 def read_sheet(sheetname:str):
     """
