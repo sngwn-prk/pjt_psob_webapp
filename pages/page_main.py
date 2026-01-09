@@ -1,6 +1,5 @@
 # Python Standard Packages
 import streamlit as st
-from contextlib import contextmanager
 import re
 import time
 import os
@@ -77,7 +76,6 @@ def format_phone_number(phone):
     except:
         return str(phone)
 
-# @contextmanager
 @retry(stop=stop_after_attempt(5), wait=wait_exponential(multiplier=0.01, min=0.05, max=0.1))
 def get_sheet_instance(sheet_name):
     connection_info = st.secrets["connections"][sheet_name]
