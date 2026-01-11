@@ -262,7 +262,7 @@ def menu_dashboard():
         cond2 = dormant_df["dormant_yn"]=="y"
         cond3 = dormant_df["dormant_admin_yn"]=="y"
         cond4 = dormant_df["withdrawal_yn"]=="n"
-        cond5 = dormant_df["withdrawal_admin_yn"]=="n")
+        cond5 = dormant_df["withdrawal_admin_yn"]=="n"
         cond6 = dormant_df["valid_yn"]=="y"
         dormant_df = dormant_df[cond1&cond2&cond3&cond4&cond5&cond6].reset_index(drop=True)
         # 휴면으로 등록된 기간 리스트
