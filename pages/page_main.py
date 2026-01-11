@@ -916,7 +916,7 @@ def menu_request_status():
                         elif row.dormant_admin_yn=="신청":
                             # valid_yn: y>n
                             update_cell("tbl_mbr_dormant_his", f"I{idx+2}", "n")                        
-                    st.session_state["req_status_msg2"] = ("success", f"요청 취소되었습니다. {edit_df2.columns}")
+                    st.session_state["req_status_msg2"] = ("success", f"요청 취소되었습니다. {row.dormant_admin_yn}")
                     custom_rerun()
                 else:
                     st.session_state["req_status_msg2"] = ("warning", "요청 취소할 데이터가 없습니다.")
