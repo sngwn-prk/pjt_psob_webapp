@@ -181,26 +181,6 @@ def update_cell(sheetname, cell, value):
         close_gc()
         return False
 
-@retry(stop=stop_after_attempt(5), wait=wait_exponential(multiplier=0.01, min=0.05, max=0.1))
-def clear_cell(sheetname, cell):
-    """
-    지정된 시트의 특정 셀 값을 삭제(비움)합니다.
-    input: "시트1", "A1"
-    """
-    try:
-        doc = get_sheet_instance()
-        sheet = doc.worksheet(sheetname)
-        if sheet:
-            # sheet.update_acell(cell, "")
-            # sheet.batch_clear([cell])
-            sheet.values_clear(cell)
-            time.sleep(SLEEP_SEC_UPDATE_CELL)
-            close_gc()
-            return True
-    except Exception as e:
-        close_gc()
-        return False
-
 def show_msg(key:str):
     prev_msg = st.session_state.get(key, (None, None))
     if prev_msg:
@@ -1038,8 +1018,7 @@ def menu_admin_approval():
                             cond2 = "미투표" in row["charge_detail"]
                             if cond1 & cond2:
                                 # deposit_date 셀값 삭제
-                                # update_cell("tbl_charge_inf_his", f"F{idx+2}", "")
-                                clear_cell("tbl_charge_inf_his", f"F{idx+2}")
+                                update_cell("tbl_charge_inf_his", f"F{idx+2}", "")
                                 # user_check_yn 셀값 변경: y->n
                                 update_cell("tbl_charge_inf_his", f"H{idx+2}", "n")
                             else:
