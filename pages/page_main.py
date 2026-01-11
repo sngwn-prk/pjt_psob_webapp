@@ -192,7 +192,8 @@ def clear_cell(sheetname, cell):
         sheet = doc.worksheet(sheetname)
         if sheet:
             # sheet.update_acell(cell, "")
-            sheet.batch_clear([cell])
+            # sheet.batch_clear([cell])
+            sheet.values_clear(cell)
             time.sleep(SLEEP_SEC_UPDATE_CELL)
             close_gc()
             return True
