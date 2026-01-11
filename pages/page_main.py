@@ -480,7 +480,7 @@ def menu_charge_req():
             # 기본 정보
             # 1. 본인 입금일
             deposit_date = st.date_input(
-                "입금일", value=today,
+                "입금일", value=today, max_value="today",
                 help="본인이 입금한 날짜를 정확히 입력해주세요.",
                 key="deposit_date1"
             )
