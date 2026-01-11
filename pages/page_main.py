@@ -261,8 +261,10 @@ def menu_dashboard():
         cond1 = dormant_df["user_id"]==user_id
         cond2 = dormant_df["dormant_yn"]=="y"
         cond3 = dormant_df["dormant_admin_yn"]=="y"
-        cond4 = dormant_df["valid_yn"]=="y"
-        dormant_df = dormant_df[cond1&cond2&cond3&cond4].reset_index(drop=True)
+        cond4 = dormant_df["withdrawal_yn"]=="n"
+        cond5 = dormant_df["withdrawal_admin_yn"]=="n")
+        cond6 = dormant_df["valid_yn"]=="y"
+        dormant_df = dormant_df[cond1&cond2&cond3&cond4&cond5&cond6].reset_index(drop=True)
         # 휴면으로 등록된 기간 리스트
         dormant_ym_lst = dormant_df["yearmonth"].tolist()
 
@@ -740,7 +742,6 @@ def menu_dormant_request():
                         "server_nick": user_nick,
                         "yearmonth": yearmonth_lst,
                         "dormant_yn": "y",
-                        "dormant_admin_yn": "y",
                         "dormant_admin_yn": "n",
                         "withdrawal_yn": "n",
                         "withdrawal_admin_yn": "n",
@@ -801,7 +802,7 @@ def menu_dormant_request():
 
     # 과거 휴면 내역
     st.markdown("##### [참고] 현재 휴면 내역")
-    st.markdown("- 요청 중 또는 운영진이 승인한 휴면 신청/철회 내역입니다.")
+    st.markdown("- 요청 중 또는 운영진이 승인한 휴면 신청 내역입니다.")
     cond1 = dormant_df["user_id"]==user_id
     cond2 = dormant_df["dormant_yn"]=="y"
     cond3 = dormant_df["withdrawal_yn"]=="n"
@@ -908,11 +909,14 @@ def menu_request_status():
                 edit_df2["cancel_yn"] = edit_df2["cancel_yn"].apply(lambda x: "y" if x else "n")
                 edit_df2 = edit_df2[edit_df2["cancel_yn"]=="y"].reset_index(drop=True)
                 if len(edit_df2)>=1:
-                    # 요청 취소: valid_yn을 n으로 변경
-                    idx_lst = edit_df2["idx"].unique().tolist()
-                    for idx in idx_lst:
-                        # valid_yn 업데이트
-                        update_cell("tbl_mbr_dormant_his", f"I{idx+2}", "n")
+                    for _, row in edit_df2.iterrows():
+                        idx = row["idx"]
+                        if row.dormant_admin_yn=="철회":
+                            # withrawal_yn: y>n
+                            update_cell("tbl_charge_inf_his", f"G{idx+2}", "n")
+                        elif row.dormant_admin_yn=="신청":
+                            # valid_yn: y>n
+                            update_cell("tbl_mbr_dormant_his", f"I{idx+2}", "n")                        
                     st.session_state["req_status_msg2"] = ("success", "요청 취소되었습니다.")
                     custom_rerun()
                 else:
@@ -1083,15 +1087,15 @@ def menu_admin_approval():
                     if len(selected_df) >= 1:
                         for _, row in selected_df.iterrows():
                             idx = row["idx"]
-                            # withdrawal_admin_yn: n>y
                             if row.withdrawal_yn=="철회":
+                                # withdrawal_admin_yn: n>y
                                 update_cell("tbl_mbr_dormant_his", f"H{idx+2}", "y")
                                 # 요청기간이 현시점이면 active_yn:>y
                                 if row.yearmonth==today_yyyymm:
                                     user_idx = mbr_df[mbr_df.user_id==user_id]["idx"].values[0]
                                     update_cell("tbl_mbr_inf_snp", f"N{user_idx+2}", "y")
-                            # dormant_admin_yn: n>y
                             elif row.withdrawal_yn=="신청":
+                                # dormant_admin_yn: n>y
                                 update_cell("tbl_mbr_dormant_his", f"F{idx+2}", "y")
                                 # 요청기간이 현시점이면 active_yn:>n
                                 if row.yearmonth==today_yyyymm:
@@ -1145,14 +1149,14 @@ def menu_admin_approval():
                         # valid_yn 셀값 변경: n->y
                         for _, row in selected_df.iterrows():
                             idx = row["idx"]
-                            # valid_yn:y>n
-                            update_cell("tbl_mbr_dormant_his", f"I{idx+2}", "n")
-                            # withdrawal_admin_yn: n>y
                             if row.withdrawal_yn=="철회":
-                                update_cell("tbl_mbr_dormant_his", f"H{idx+2}", "y")
-                            # dormant_admin_yn: n>y
+                                # withdrawal_yn: y>n
+                                update_cell("tbl_mbr_dormant_his", f"G{idx+2}", "n")
                             elif row.withdrawal_yn=="신청":
+                                # dormant_admin_yn: n>y
                                 update_cell("tbl_mbr_dormant_his", f"F{idx+2}", "y")
+                                # valid_yn:y>n
+                                update_cell("tbl_mbr_dormant_his", f"I{idx+2}", "n")
 
                         # DM 발송
                         user_info_df = selected_df[["user_id", "server_nick"]].drop_duplicates().reset_index(drop=True)
