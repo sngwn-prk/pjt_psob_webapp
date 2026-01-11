@@ -885,9 +885,10 @@ def menu_request_status():
     with st.form(key="request_status_form2"):
         cond1 = dormant_df["user_id"]==user_id
         cond2 = dormant_df["dormant_yn"]=="y"
-        cond3 = dormant_df["withdrawal_admin_yn"]=="n"
-        cond4 = dormant_df["valid_yn"] == "y"
-        df2 = dormant_df[cond1&cond2&cond3&cond4].reset_index(drop=True)
+        cond3 = (dormant_df["dormant_admin_yn"]=="n") & (dormant_df["withdrawal_yn"]=="n") & (dormant_df["withdrawal_admin_yn"]=="n")
+        cond4 = (dormant_df["dormant_admin_yn"]=="y") & (dormant_df["withdrawal_yn"]=="y") & (dormant_df["withdrawal_admin_yn"]=="n")
+        cond5 = dormant_df["valid_yn"] == "y"
+        df2 = dormant_df[cond1&cond2&(cond3|cond4)&cond5].reset_index(drop=True)
         df2['cancel_yn'] = False
         df2["dormant_admin_yn"] = df2["dormant_admin_yn"].map({"y": "철회", "n": "신청"}).fillna(df2["dormant_admin_yn"])
         edit_df2 = st.data_editor(
@@ -916,7 +917,7 @@ def menu_request_status():
                         elif row.dormant_admin_yn=="신청":
                             # valid_yn: y>n
                             update_cell("tbl_mbr_dormant_his", f"I{idx+2}", "n")                        
-                    st.session_state["req_status_msg2"] = ("success", f"요청 취소되었습니다. {row.dormant_admin_yn}")
+                    st.session_state["req_status_msg2"] = ("success", f"요청 취소되었습니다.")
                     custom_rerun()
                 else:
                     st.session_state["req_status_msg2"] = ("warning", "요청 취소할 데이터가 없습니다.")
