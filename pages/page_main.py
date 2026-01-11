@@ -912,7 +912,7 @@ def menu_request_status():
                         idx = row["idx"]
                         if row.dormant_admin_yn=="철회":
                             # withrawal_yn: y>n
-                            update_cell("tbl_charge_inf_his", f"G{idx+2}", "n")
+                            update_cell("tbl_mbr_dormant_his", f"G{idx+2}", "n")
                         elif row.dormant_admin_yn=="신청":
                             # valid_yn: y>n
                             update_cell("tbl_mbr_dormant_his", f"I{idx+2}", "n")                        
