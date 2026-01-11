@@ -706,6 +706,7 @@ def menu_dormant_request():
     # 휴면 신청
     if selected_menu_dormant_req==menu_items_dormant_req[0]:
         st.markdown("##### 휴면 신청")
+        st.markdown("- 해당 월부터 향후 12개월 내에서 선택 가능합니다. (과거 기간 신청 불가)")
         with st.form(key="request_dormant_form_apply"):
             # 요청 날짜 연월 기준 향후 12개월
             ym_list = [
@@ -802,12 +803,13 @@ def menu_dormant_request():
     # 과거 휴면 내역
     st.markdown("##### [참고] 현재 휴면 내역")
     st.markdown("- 대기/승인 상태의 휴면 신청 내역입니다.")
+    st.markdown("- 철회 관련 내역은 요청 현황을 참고해주세요.")
     cond1 = dormant_df["user_id"]==user_id
     cond2 = dormant_df["dormant_yn"]=="y"
     cond3 = (dormant_df["dormant_admin_yn"]=="n") & (dormant_df["withdrawal_yn"]=="n") & (dormant_df["withdrawal_admin_yn"]=="n")
     cond4 = (dormant_df["dormant_admin_yn"]=="y") & (dormant_df["withdrawal_yn"]=="n") & (dormant_df["withdrawal_admin_yn"]=="n")
     cond5 = (dormant_df["dormant_admin_yn"]=="y") & (dormant_df["withdrawal_yn"]=="y") & (dormant_df["withdrawal_admin_yn"]=="n")
-    cond6 = dormant_df["valid_yn"]=="y"    
+    cond6 = dormant_df["valid_yn"]=="y"
     disp_df = dormant_df[cond1&cond2&(cond3|cond4|cond5)&cond6].reset_index(drop=True)
     disp_df.columns = [
         "요청일자" if col == "request_date" else
@@ -831,6 +833,8 @@ def menu_request_status():
 
     st.markdown("---")
     st.markdown("##### 1. 정산 요청 현황")
+    st.markdown("- 요청한 내용을 삭제합니다.")
+    st.markdown("- 미투표 벌금 내역 취소 시, 추후 재정산 과정이 필요합니다.")
 
     with st.form(key="request_status_form1"):
         cond1 = charge_df["user_id"]==user_id
