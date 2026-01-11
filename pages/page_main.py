@@ -801,21 +801,22 @@ def menu_dormant_request():
 
     # 과거 휴면 내역
     st.markdown("##### [참고] 현재 휴면 내역")
-    st.markdown("- 요청 중 또는 운영진이 승인한 휴면 신청 내역입니다.")
+    st.markdown("- 대기/승인 상태의 휴면 신청 내역입니다.")
     cond1 = dormant_df["user_id"]==user_id
     cond2 = dormant_df["dormant_yn"]=="y"
-    cond3 = dormant_df["withdrawal_yn"]=="n"
-    cond4 = dormant_df["withdrawal_admin_yn"]=="n"
-    cond5 = dormant_df["valid_yn"]=="y"    
-    disp_df = dormant_df[cond1&cond2&cond3&cond4&cond5].reset_index(drop=True)
+    cond3 = (dormant_df["dormant_admin_yn"]=="n") & (dormant_df["withdrawal_yn"]=="n") & (dormant_df["withdrawal_admin_yn"]=="n")
+    cond4 = (dormant_df["dormant_admin_yn"]=="y") & (dormant_df["withdrawal_yn"]=="n") & (dormant_df["withdrawal_admin_yn"]=="n")
+    cond5 = (dormant_df["dormant_admin_yn"]=="y") & (dormant_df["withdrawal_yn"]=="y") & (dormant_df["withdrawal_admin_yn"]=="n")
+    cond6 = dormant_df["valid_yn"]=="y"    
+    disp_df = dormant_df[cond1&cond2&(cond3|cond4|cond5)&cond6].reset_index(drop=True)
     disp_df.columns = [
         "요청일자" if col == "request_date" else
         "휴면기간" if col == "yearmonth" else
-        "상태" if col == "withdrawal_admin_yn" else col
+        "상태" if col == "dormant_admin_yn" else col
         for col in disp_df.columns
     ]
     disp_df = disp_df[["요청일자", "휴면기간", "상태"]]
-    disp_df["상태"] = disp_df["상태"].map({"y": "승인", "n": "요청"}).fillna(disp_df["상태"])
+    disp_df["상태"] = disp_df["상태"].map({"y": "승인", "n": "대기"}).fillna(disp_df["상태"])
     st.dataframe(disp_df, hide_index=True, width="stretch")
 
 def menu_request_status():
