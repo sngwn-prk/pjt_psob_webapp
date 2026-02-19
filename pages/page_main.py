@@ -450,7 +450,7 @@ def menu_dashboard():
 def menu_charge_req():
     """정산요청 메뉴"""
     # 하위 메뉴
-    menu_items_charge_req = ["회비", "벌금", "경비"]
+    menu_items_charge_req = ["회비", "벌금", "경비", "휴면/용병참석"]
     selected_menu_charge_req = st.selectbox(
         label="하위 메뉴",
         options=menu_items_charge_req,
@@ -686,6 +686,38 @@ def menu_charge_req():
                         else:
                             st.session_state["charge_req_msg3"] = ("warning", "요청할 데이터가 없습니다.")
             show_msg("charge_req_msg3")
+    
+    # 휴면/용병참석
+    elif selected_menu_charge_req==menu_items_charge_req[3]:
+        # 정산 내역 테이블
+        charge_df = read_sheet("tbl_charge_inf_his")
+        charge_df["idx"] = charge_df.index
+        
+        st.markdown("##### 휴면/용병참석")
+        st.markdown("- 휴면: 휴면 상태의 회원이 운동에 참석하는 경우 (회당 5,000원)")
+        st.markdown("- 용병: 용병을 초청한 경우 (인당 5,000원)")
+
+        cond1 = charge_df["user_id"]==user_id
+        cond2 = charge_df["user_check_yn"]=="n"
+        cond3 = charge_df["admin_check_yn"]=="n"
+        cond4 = charge_df["valid_yn"] == "y"
+        df = charge_df[cond1&cond2&cond3&cond4].reset_index(drop=True)
+        df['select_yn'] = False
+        edit_df = st.data_editor(
+            df,
+            column_config={
+                "select_yn": st.column_config.CheckboxColumn("선택", disabled=False, default=False),
+                "charge_type": st.column_config.TextColumn("유형", disabled=True),
+                "charge_detail": st.column_config.TextColumn("상세", disabled=True),
+                "amount": st.column_config.NumberColumn("금액", disabled=True),
+            },
+            column_order=["select_yn", "charge_type", "charge_detail", "deposit_date", "amount"],
+            num_rows="fixed",
+            hide_index=True,
+            width="stretch",
+        )
+
+        st.dataframe(edit_df, hide_index=True, width="stretch")
 
 def menu_dormant_request():
     """휴면요청 메뉴"""
