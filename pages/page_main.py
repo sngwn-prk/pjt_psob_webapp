@@ -703,7 +703,8 @@ def menu_charge_req():
             cond2 = charge_df["user_check_yn"]=="n"
             cond3 = charge_df["admin_check_yn"]=="n"
             cond4 = charge_df["valid_yn"] == "y"
-            df = charge_df[cond1&cond2&cond3&cond4].reset_index(drop=True)
+            cond5 = charge_df["charge_type"].isin(["용병","휴면"])
+            df = charge_df[cond1&cond2&cond3&cond4&cond5].reset_index(drop=True)
             df['select_yn'] = False
             edit_df = st.data_editor(
                 df,
