@@ -697,43 +697,45 @@ def menu_charge_req():
         st.markdown("- 휴면: 휴면 상태의 회원이 운동에 참석하는 경우 (회당 5,000원)")
         st.markdown("- 용병: 용병을 초청한 경우 (인당 5,000원)")
 
-        cond1 = charge_df["user_id"]==user_id
-        cond2 = charge_df["user_check_yn"]=="n"
-        cond3 = charge_df["admin_check_yn"]=="n"
-        cond4 = charge_df["valid_yn"] == "y"
-        df = charge_df[cond1&cond2&cond3&cond4].reset_index(drop=True)
-        df['select_yn'] = False
-        edit_df = st.data_editor(
-            df,
-            column_config={
-                "select_yn": st.column_config.CheckboxColumn("선택", disabled=False, default=False),
-                "charge_type": st.column_config.TextColumn("유형", disabled=True),
-                "charge_detail": st.column_config.TextColumn("상세", disabled=True),
-                "amount": st.column_config.NumberColumn("금액", disabled=True),
-            },
-            column_order=["select_yn", "charge_type", "charge_detail", "amount"],
-            num_rows="fixed",
-            hide_index=True,
-            width="stretch",
-        )
-        
-        charge_req_btn4 = st.form_submit_button("요청", key="charge_req_btn4", use_container_width=True)
-        if charge_req_btn4:
-            with st.spinner(f"In progress...", show_time=True):
-                selected_df = edit_df[edit_df["select_yn"]==True].reset_index(drop=True)
-                if len(selected_df)>0:
-                    for _, row in selected_df.iterrows():
-                        idx = row["idx"]
-                        # deposit_date 업데이트
-                        update_cell("tbl_charge_inf_his", f"F{idx+2}", "'"+deposit_date)
-                        # user_check_yn을 y로 변경
-                        update_cell("tbl_charge_inf_his", f"H{idx+2}", "y")
-                    total_amount = selected_df.amount.sum()
-                    st.session_state["charge_req_msg4"] = ("success", f"요청 완료되었습니다. 합계 금액: {total_amount:,}원")
-                    custom_rerun()
-                else:
-                    st.session_state["charge_req_msg4"] = ("warning", "요청할 데이터가 없습니다.")
-        show_msg("charge_req_msg4")
+        charge_req_btn4 = False
+        with st.form(key="charge_req_form4"):
+            cond1 = charge_df["user_id"]==user_id
+            cond2 = charge_df["user_check_yn"]=="n"
+            cond3 = charge_df["admin_check_yn"]=="n"
+            cond4 = charge_df["valid_yn"] == "y"
+            df = charge_df[cond1&cond2&cond3&cond4].reset_index(drop=True)
+            df['select_yn'] = False
+            edit_df = st.data_editor(
+                df,
+                column_config={
+                    "select_yn": st.column_config.CheckboxColumn("선택", disabled=False, default=False),
+                    "charge_type": st.column_config.TextColumn("유형", disabled=True),
+                    "charge_detail": st.column_config.TextColumn("상세", disabled=True),
+                    "amount": st.column_config.NumberColumn("금액", disabled=True),
+                },
+                column_order=["select_yn", "charge_type", "charge_detail", "amount"],
+                num_rows="fixed",
+                hide_index=True,
+                width="stretch",
+            )
+            
+            charge_req_btn4 = st.form_submit_button("요청", key="charge_req_btn4", use_container_width=True)
+            if charge_req_btn4:
+                with st.spinner(f"In progress...", show_time=True):
+                    selected_df = edit_df[edit_df["select_yn"]==True].reset_index(drop=True)
+                    if len(selected_df)>0:
+                        for _, row in selected_df.iterrows():
+                            idx = row["idx"]
+                            # deposit_date 업데이트
+                            update_cell("tbl_charge_inf_his", f"F{idx+2}", "'"+deposit_date)
+                            # user_check_yn을 y로 변경
+                            update_cell("tbl_charge_inf_his", f"H{idx+2}", "y")
+                        total_amount = selected_df.amount.sum()
+                        st.session_state["charge_req_msg4"] = ("success", f"요청 완료되었습니다. 합계 금액: {total_amount:,}원")
+                        custom_rerun()
+                    else:
+                        st.session_state["charge_req_msg4"] = ("warning", "요청할 데이터가 없습니다.")
+            show_msg("charge_req_msg4")
         
 def menu_dormant_request():
     """휴면요청 메뉴"""
