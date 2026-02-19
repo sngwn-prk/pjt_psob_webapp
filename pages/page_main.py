@@ -740,7 +740,7 @@ def menu_charge_req():
                             update_cell("tbl_charge_inf_his", f"F{idx+2}", "'"+deposit_date)
                             # user_check_yn을 y로 변경
                             update_cell("tbl_charge_inf_his", f"H{idx+2}", "y")
-                        total_amount = selected_df["amount"].sum()
+                        total_amount = int(selected_df["amount"].sum())
                         st.session_state["charge_req_msg4"] = ("success", f"요청 완료되었습니다. 합계 금액: {total_amount:,}원")
                         custom_rerun()
                     else:
