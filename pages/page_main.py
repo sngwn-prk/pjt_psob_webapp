@@ -699,6 +699,14 @@ def menu_charge_req():
 
         charge_req_btn4 = False
         with st.form(key="charge_req_form4"):
+            # 1. 본인 입금일
+            deposit_date = st.date_input(
+                "입금일", value=today, max_value="today",
+                help="본인이 입금한 날짜를 정확히 입력해주세요.",
+                key="deposit_date3"
+            )
+
+            # 2. 납부 내역 선택
             cond1 = charge_df["user_id"]==user_id
             cond2 = charge_df["user_check_yn"]=="n"
             cond3 = charge_df["admin_check_yn"]=="n"
