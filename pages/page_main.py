@@ -705,6 +705,7 @@ def menu_charge_req():
                 help="본인이 입금한 날짜를 정확히 입력해주세요.",
                 key="deposit_date3"
             )
+            deposit_date = str(deposit_date).replace("-", "")
 
             # 2. 납부 내역 선택
             cond1 = charge_df["user_id"]==user_id
